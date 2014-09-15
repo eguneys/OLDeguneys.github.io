@@ -1,0 +1,6 @@
+[submodule ".themes/solarized"]
+	path = .themes/solarized
+	url = https://github.com/erikzaadi/solarized-octopress-theme.git
+[submodule ".themes/HPSTR"]
+	path = .themes/HPSTR
+	url = https://github.com/Z1MM32M4N/hpstr-theme.git
