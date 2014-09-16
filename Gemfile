@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-require 'animation'
+gem 'animation'
 
 group :development do
   gem 'rake', '~> 10.0'
