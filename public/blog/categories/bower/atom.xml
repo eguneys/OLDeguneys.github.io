@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Bower | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/bower/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-16T23:29:48+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Setting Up the Server]]></title>
+    <link href="http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
+    <updated>2013-12-31T02:52:07+02:00</updated>
+    <id>http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
+    <content type="html"><![CDATA[<p>Getting Started Full Stack - Building a simple blog - Part 1</p>
+
+<p> In this post, we will install the required components to build a simple blog. In the end of this post, you will be serving a hello world page, with a responsive bootstrap theme, and all necessary script files.</p>
+
+<h1>Server Side:</h1>
+
+<dl>
+<dt><a href="http://nodejs.org">Node.js</a></dt>
+<dd>Host the website, on javascript platform, based on Google&rsquo;s <a href="https://code.google.com/p/v8/">V8</a> JavaScript Engine</dd>
+<dt><a href="http://expressjs.com/guide.html">Express</a></dt>
+<dd>Web application framework for node.js</dd>
+<dt><a href="http://docs.mongodb.org/manual/installation">Mongodb</a></dt>
+<dd>Open-Source NoSQL database written in C++. Also look at <a href="mongoosejs.com/docs/index.html">Mongoosejs</a>, simple mongodb driver for nodejs.</dd>
+<dt><a href="http://bower.io">Bower</a></dt>
+<dd>Package manager for the web. Simplifies installing client side resources.</dd>
+</dl>
+
+<h1>Client Side:</h1>
+
+<dl>
+<dt><a href="http://getbootstrap.com/getting-started">Bootstrap</a></dt>
+<dd>Responsive front-end css framework.</dd>
+<dt><a href="http://jquery.com/download">JQuery</a></dt>
+<dd>Javascript, for interactive webpages.</dd>
+<dt><a href="http://backbonejs.org">Backbone.js</a></dt>
+<dd>Gives structure to web applications. Models, Collections and Views.</dd>
+</dl>
+
+<h1>Let&rsquo;s get Started</h1>
+
+<h2>Introduction</h2>
+
+<p>Building a simple blog, solving problems along the path, it&rsquo;s gonna be fun.</p>
+
+<h3>Web Server</h3>
+
+<p>Nodejs hosts the website. Serving pages, scripts and stylesheets.
+Expressjs is a web application framework, simplifies dealing with serving pages.
+It uses middleware to extend functionality like plugins.</p>
+
+<h3>Database</h3>
+
+<p>Mongodb our nosql database. it has no relational tables, but nested documents.
+Mongoosejs is our driver for mongodb on nodejs. Model schemas and operate.</p>
+
+<h3>Content Management</h3>
+
+<p>Bower downloads scripts and stylesheets from web into our path, we will simply reference it.</p>
+
+<h3>CSS Theme</h3>
+
+<p>Bootstrap gives the site a nice look. Responsive, meaning it will behave when resized, looks nice on any device.</p>
+
+<h3>Javascript</h3>
+
+<p>JQuery, main dependency for manipulating dom.
+Backbone.js is mvc framework for building client side interaction.</p>
+
+<blockquote><p>Backbone.js is lightweight, and heavily depends on Jquery, a popular alternative is <a href="http://angularjs.org">angularjs</a>. Angular.js doesn&rsquo;t need Jquery, and is a higher level framework.</p>
+
+<p>Backbone.js doesn&rsquo;t implement templating. Templating is supported by mainly <a href="http://underscorejs.org/#template">underscore.js</a> or other libraries. (<a href="http://handlebarsjs.com/">handlebarsjs</a>, <a href="http://mustache.github.io/">mustache</a>)</p>
+
+<p>Backbone.js will teach us more about structure, templating, jquery, and javascript. We should move to higher level frameworks later on. (possibly built on backbonejs) Finally, backbonejs isn&rsquo;t bound to SPA&rsquo;s, we may use it for other projects later on (more coming after this).</p></blockquote>
+
+<h2>Installation</h2>
+
+<p><code>I use ubuntu/linux you should find a way to install on your platform, read the guides and google.</code></p>
+
+<h2>Npm, Node.js</h2>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">&lt;/p&gt;
+
+&lt;h1&gt;install node.js&lt;/h1&gt;
+
+&lt;p&gt;sudo add-apt-repository -y ppa:chris-lea/node.js
+sudo apt-get update
+sudo apt-get install nodejs&lt;/p&gt;
+
+&lt;h1&gt;test should look like: v0.10.12&lt;/h1&gt;
+
+&lt;p&gt;node -v</code></pre></div></p>
+
+<p>Or,
+follow the <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">Instructions</a></p>
+
+<p>This will also install npm package manager. Npm is used to install packages required by node.js.</p>
+
+<h2>Mongodb</h2>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">&lt;/p&gt;
+
+&lt;h1&gt;install mongodb&lt;/h1&gt;
+
+&lt;p&gt;sudo apt-key adv <span class="p">&amp;</span>ndash<span class="p">;</span>keyserver hkp://keyserver.ubuntu.com:80 <span class="p">&amp;</span>ndash<span class="p">;</span>recv 7F0CEB10
+<span class="nb">echo</span> <span class="p">&amp;</span>lsquo<span class="p">;</span>deb &lt;a <span class="nv">href</span><span class="o">=</span><span class="s2">&quot;http://downloads-distro.mongodb.org/repo/ubuntu-upstart&quot;</span>&gt;http://downloads-distro.mongodb.org/repo/ubuntu-upstart&lt;/a&gt; dist 10gen<span class="p">&amp;</span>rsquo<span class="p">;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/mongodb.list
+sudo apt-get update
+sudo apt-get install mongodb-10gen&lt;/p&gt;
+
+&lt;h1&gt;test should bring mongo shell, Ctrl-c to <span class="nb">break</span>&lt;/h1&gt;
+
+&lt;p&gt;mongo</code></pre></div></p>
+
+<p>More <a href="http://docs.mongodb.org/manual/installation/">Instructions</a></p>
+
+<h2>Bower</h2>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">&lt;/p&gt;
+
+&lt;h1&gt;install bower&lt;/h1&gt;
+
+&lt;p&gt;npm install -g bower&lt;/p&gt;
+
+&lt;h1&gt;test should look like: 1.2.8&lt;/h1&gt;
+
+&lt;p&gt;bower -v</code></pre></div></p>
+
+<p>More <a href="http://bower.io">Instructions</a></p>
+
+<blockquote><p>Congratz, this is enough to host our simple blog. We will learn these tools along the way. Now let&rsquo;s build our codebase.</p></blockquote>
+
+<h1>Directory Structure</h1>
+
+<p>Build the following directory structure. public folder will host our public pages, scripts and stylesheets. &lsquo;scripts&rsquo; folder will host javascript code for running the nodejs server, interacting with mongodb.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">../mysimpleblog
+&lt;code&gt;-- app
+    <span class="p">|</span>-- public
+    <span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> js
+    <span class="p">|</span>       <span class="p">|&amp;</span>ndash<span class="p">;</span> collections
+    <span class="p">|</span>       <span class="p">|&amp;</span>ndash<span class="p">;</span> models
+    <span class="p">|</span>       <span class="p">|&amp;</span>ndash<span class="p">;</span> routers
+    <span class="p">|</span>       &lt;code&gt;-- views
+   &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> scripts</code></pre></div></p>
+
+<h1>Configuration</h1>
+
+<h2>Package.json</h2>
+
+<p><div><script src='https://gist.github.com/e0ae625587d0f578a8e0.js'></script>
+<noscript><pre><code>{
+    &quot;name&quot;: &quot;Simple_Blog&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;description&quot; : &quot;A simple blog with backbone.js&quot;,
+    &quot;dependencies&quot; : {
+        &quot;express&quot;: &quot;latest&quot;,
+        &quot;baucis&quot;: &quot;latest&quot;,
+        &quot;connect&quot;: &quot;latest&quot;
+    }
+    
+}</code></pre></noscript></div>
+</p>
+
+<p><a href="http://package.json.nodejitsu.com/">package.json</a> is a packaging format for node.js.
+Important part here is dependencies, where we declare dependencies for our project.
+Place it in root folder of your project, where your app folder resides.</p>
+
+<p><a href="expressjs.com">express</a> : web application framework, It uses middleware to handle http requests.
+Middleware could be third party code, which we will use shortly.</p>
+
+<p><a href="https://github.com/wprl/baucis">baucis</a> : Baucis is Express middleware that creates configurable REST APIs using Mongoose schemata</p>
+
+<p><a href="https://github.com/senchalabs/connect">connect</a> : Lower level middleware for node.js, not important for us any time soon. baucis needs it so we include.</p>
+
+<h2>.bowerrc</h2>
+
+<p><div><script src='https://gist.github.com/61b1ed8e2fee1d347c2f.js'></script>
+<noscript><pre><code>{
+        &quot;directory&quot;: &quot;app/public/bower_components&quot;
+}</code></pre></noscript></div>
+</p>
+
+<p><a href="http://stackoverflow.com/questions/14079833/how-to-change-bowers-default-components-folder">.bowerrc</a> file will change bower&rsquo;s default components folder. Place it in root folder of your project.</p>
+
+<h1>Installing packages</h1>
+
+<p>Server side dependencies are defined in package.json, and installed with npm. Client side dependencies are defined in bower.json and installed with bower.</p>
+
+<p>However we won&rsquo;t be using bower.json rather install the required files manually.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">&lt;/p&gt;
+
+&lt;h1&gt;install server side packages <span class="o">(</span>defined in package.json<span class="o">)</span>&lt;/h1&gt;
+
+&lt;p&gt;npm install&lt;/p&gt;
+
+&lt;h1&gt;install client side packages manually with bower&lt;/h1&gt;
+
+&lt;p&gt;bower install bootstrap
+bower install fontawesome&lt;/p&gt;
+
+&lt;p&gt;bower install jquery
+bower install backbonejs
+bower install underscore&lt;/p&gt;
+
+&lt;p&gt;</code></pre></div></p>
+
+<p>Server side packages can be directly used in javascript code, we will see how that&rsquo;s done later. Client side packages are simply files downloaded in directory we defined in .bowerrc so you can check it out there. We will reference them in our index.html.</p>
+
+<h1>Setting up the server</h1>
+
+<p>Final step is to actually setup the server, so we can host our files. Go to app/scripts directory and create the two files below.</p>
+
+<p><div><script src='https://gist.github.com/938cd7857d3480f63d7a.js'></script>
+<noscript><pre><code>var path = require('path');
+// File IO module
+var fs = require('fs');
+// This is how you export things to other modules. 
+// See routes.index usage in web.js routes.index is 
+// replaced by this function.
+// This function is a middleware for handling http requests
+exports.index = function(req, res) {
+    // read index.html and send as response
+    fs.readFile(path.join(__dirname, '../public/index.html'), 'utf8', function(err, text) {
+        res.send(text);
+    });
+}</code></pre></noscript></div>
+</p>
+
+<p>Further information:
+<a href="http://stackoverflow.com/questions/12695591/node-js-express-js-how-does-app-router-work">middleware</a> ,
+<a href="http://stackoverflow.com/questions/5311334/what-is-the-purpose-of-nodejs-module-exports-and-how-do-you-use-it">require</a> .</p>
+
+<p>Finally we need an index.html to serve, and we are ready to launch. Go to app/public directory and create the file below.</p>
+
+<p><div><script src='https://gist.github.com/917ed8e8f24570f696fa.js?file=index.html'></script>
+<noscript><pre><code>&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Simple Blog&lt;/title&gt;
+
+    
+    &lt;link href=&quot;/bower_components/bootstrap/dist/css/bootstrap.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;link href=&quot;/bower_components/font-awesome/css/font-awesome.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+
+
+    &lt;nav class=&quot;navbar navbar-default&quot;&gt;
+      &lt;div class=&quot;navbar-header&quot;&gt;
+        &lt;button class=&quot;navbar-toggle&quot; type=&quot;button&quot; data-toggle=&quot;collapse&quot; data-target=&quot;#navbar-collapse&quot;&gt;
+          &lt;span class=&quot;sr-only&quot;&gt; Toggle navigation&lt;/span&gt;
+	  &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+	  &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+	  &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+	&lt;/button&gt;
+	&lt;a class=&quot;navbar-brand&quot; href='#'&gt; Simple Blog &lt;/a&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;collapse navbar-collapse&quot; id=&quot;navbar-collapse&quot;&gt;
+        &lt;ul class=&quot;nav navbar-nav&quot; id=&quot;nav-item-container&quot;&gt;
+	&lt;/ul&gt;
+      &lt;/div&gt;
+
+    &lt;/nav&gt;
+	
+    &lt;div class=&quot;container&quot; id=&quot;container&quot;&gt;
+      &lt;h1&gt; Hello World &lt;/h1&gt;
+    &lt;/div&gt;
+
+
+      &lt;script src=&quot;/bower_components/jquery/jquery.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/bootstrap/dist/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/underscore/underscore-min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/backbone/backbone-min.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+  
+&lt;/html&gt;</code></pre></noscript></div>
+</p>
+
+<h1>Launch Time</h1>
+
+<p>To run the server go to app folder and run:
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># test: output should be</span>
+   <span class="c"># - listening on port 3000</span>
+   node ./scripts/web</code></pre></div></p>
+
+<p>Now launch your browser and locate to <a href="http://localhost:3000.">http://localhost:3000.</a></p>
+
+<p>One final note here is that, if you make changes inside app/public
+folder, a browser refresh is enough to see the changes, if you make
+changes inside app/scripts folder, you need to restart the server, in
+order to changes to take effect. There are tools to live reload every
+change but that&rsquo;s for a later time.</p>
+
+<blockquote><p>Please share your thoughts below. Thank you.</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>

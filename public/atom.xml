@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-16T23:29:48+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Building API With Baucis]]></title>
+    <link href="http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
+    <updated>2014-01-06T11:52:06+02:00</updated>
+    <id>http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
+    <content type="html"><![CDATA[<p>In previous post, we&rsquo;ve seen how to navigate in our site using
+backbone.js. In this post, we will go back to server side, and build
+our blog api using <a href="https://github.com/wprl/baucis">baucis</a>. At the
+end of this tutorial, you will be able to query your mongodb database
+and pull blog information.</p>
+
+<h1>Building Schemas with Mongoose</h1>
+
+<p>Firstly, let&rsquo;s define our blog schema. We will use
+<a href="http://mongoosejs.com">mongoose</a> to interact with mongodb. Go to
+app/scripts directory and create a new file named schemas.js.</p>
+
+<p><em>app/scripts/schemas.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">baucis</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;baucis&#39;</span><span class="p">);</span>
+
+<span class="c1">// Define journal schema</span>
+<span class="kd">var</span> <span class="nx">journalSchema</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+    <span class="nx">paper</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="nb">String</span><span class="p">},</span>
+    <span class="nx">author</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">photo</span><span class="o">:</span> <span class="nb">String</span> <span class="p">},</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">body</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">date</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">Date</span><span class="p">,</span> <span class="k">default</span><span class="o">:</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">},</span>
+    <span class="nx">meta</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">votes</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">favs</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">tags</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">lowercase</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">trim</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// db connection string</span>
+<span class="kd">var</span> <span class="nx">MONGO_URI</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGOHQ_URI</span> <span class="o">||</span> <span class="s1">&#39;mongodb://localhost/test&#39;</span><span class="p">;</span>
+
+
+<span class="c1">// connect to mongodb with mongoose</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="nx">MONGO_URI</span><span class="p">);</span>
+
+<span class="c1">// define a journal model with journalSchema</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">,</span> <span class="nx">journalSchema</span><span class="p">);</span>
+
+<span class="c1">// use baucis to create a rest api</span>
+<span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="nx">baucis</span><span class="p">.</span><span class="nx">rest</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">);</span></code></pre></div>
+
+
+<p>We created a blog schema, connected to our database, defined a model
+based on our schema, and finally used baucis to create the rest api.
+Now if you run your server, your api will be available at:</p>
+
+<p>*<a href="http://localhost/api*">http://localhost/api*</a> endpoint.</p>
+
+<p>Here is a table, describing available functions:</p>
+
+<table>
+<thead>
+<tr>
+<th> HTTP Verb     </th>
+<th> /journals   </th>
+<th> /journals/:id </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> GET           </td>
+<td> Get all or a subset of documents </td>
+<td> Get the addressed document </td>
+</tr>
+<tr>
+<td> POST          </td>
+<td> Creates new documents and sends them back.  You may post a single document or an array of documents.      </td>
+<td> n/a </td>
+</tr>
+<tr>
+<td> PUT           </td>
+<td> n/a </td>
+<td> Update the addressed document </td>
+</tr>
+<tr>
+<td> DELETE        </td>
+<td> Delete all or a subset of documents </td>
+<td> Delete the addressed object </td>
+</tr>
+</tbody>
+</table>
+
+
+<p>To test it go to *<a href="http://localhost/api/journals*">http://localhost/api/journals*</a> in your browser, it
+should return an empty array. Because we don&rsquo;t have any blogs in our
+database yet.</p>
+
+<h1>Using Mongo Shell</h1>
+
+<p>Though we can post blogs to our database using the api, we will simply
+create blogs using the mongo shell. Mongo shell is CLI for using
+mongodb. run <em>mongo</em> in your console to open the shell. Issue the
+following commands to create your first blog entry.</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># This is for commenting</span>
+   <span class="c"># just ignore it.</span>
+
+   <span class="c"># List databases</span>
+   show dbs
+   
+   <span class="c"># Choose database, test</span>
+   use <span class="nb">test</span>
+
+   <span class="c"># List collections in the database</span>
+   show collections
+
+   <span class="c"># journals collection is created when we created a model with mongoose.</span>
+   <span class="c"># collection is the plural form of our model.</span>
+
+   <span class="c">#list the contents in journals collection</span>
+   <span class="c"># it should be empty</span>
+   db.journals.find<span class="o">()</span>
+
+   <span class="c"># place a new blog entry in journals collection</span>
+   <span class="c"># here we define only title and body attributes, you can define other attributes as well</span>
+
+   db.journals.create<span class="o">({</span>title: <span class="s1">&#39;My Simple Blog 1&#39;</span>, body: <span class="s1">&#39;Simple body for testing&#39;</span> <span class="o">})</span>
+
+   <span class="c"># list the contents again to see the newly created blog</span>
+   db.journals.find<span class="o">()</span></code></pre></div>
+
+
+<p>Mongo shell is interpreting javascript code here, so use
+javascript. Undefined attributes will have their defaults value We can
+disable null values for attributes, but for simplicity we don&rsquo;t.</p>
+
+<p>Now go to <a href="http://localhost/api/journals">http://localhost/api/journals</a> again and see the newly created blog entry.</p>
+
+<blockquote><p>In the next post, we will consume this api with backbone.js and list
+the blogs in our main page.</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Site Navigation]]></title>
+    <link href="http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation/"/>
+    <updated>2014-01-01T11:52:06+02:00</updated>
+    <id>http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation</id>
+    <content type="html"><![CDATA[<p>In previous post we&rsquo;ve seen how to setup a node.js server and serve our index.html.
+In this post, we will implement navigation in our site using backbone.js. At the end of this tutorial,
+you will be able to navigate between tabs in your site.</p>
+
+<h1>Router</h1>
+
+<p>Backbone.Router provides methods for routing client-side pages. We will start by creating a custom router
+class. Place this in <em>js/app.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">AppRouter</span> <span class="o">=</span> <span class="k">new</span> <span class="p">(</span><span class="nx">Backbone</span><span class="p">.</span><span class="nx">Router</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="p">},</span>
+    
+    <span class="nx">routes</span><span class="o">:</span> <span class="p">{</span>
+        
+    <span class="p">}</span>
+<span class="p">}))();</span></code></pre></div>
+
+
+<p>When creating a router you may pass its routes hash directly, or manually create a route for the router.
+We will do it manually inside initialize function. But first let&rsquo;s define our routes in an object.</p>
+
+<p><em>js/app.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">NavigationRoutes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Home&quot;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">route</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="nx">view</span><span class="o">:</span> <span class="nx">Home</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;About&quot;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">route</span><span class="o">:</span> <span class="s2">&quot;About&quot;</span><span class="p">,</span>
+        <span class="nx">view</span><span class="o">:</span> <span class="nx">About</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;default&quot;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">route</span><span class="o">:</span> <span class="s2">&quot;*default&quot;</span><span class="p">,</span>
+        <span class="nx">view</span><span class="o">:</span> <span class="nx">NotFound</span><span class="p">,</span>
+        <span class="nx">hide</span><span class="o">:</span> <span class="kc">true</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+
+<p>NavigationRoutes object will keep our routes for the application. The keys are title for the route. &ldquo;route&rdquo; property
+is the routing string. &ldquo;view&rdquo; property defines the backbone view objects that will be rendered for the route, they are the <em>Route Views</em> We will
+define them later. Finally &ldquo;default&rdquo; key has a &ldquo;hide&rdquo; property telling that it will be hidden on navigation tab.
+We can add different properties as we like here, for example &ldquo;permissions&rdquo; property might tell a navigation tab
+to be only shown for an admin.</p>
+
+<p>Next we will add these routes to our router. Place this function in your Backbone router.</p>
+
+<p><em>js/app.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="nx">NavigationRoutes</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">].</span><span class="nx">route</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">NavigationRoutes</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">key</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="nx">NavigationRoutes</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">route</span><span class="p">,</span> <span class="nx">key</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">},</span></code></pre></div>
+
+
+<p>Here we traverse NavigationRoutes, and add each route in our router. There is a little logic there for the default
+route. We add the default route first, so it becomes the last route to be looked.
+The default route is defines as &ldquo;*default&rdquo;, this is called a splat and matches everything in the url. So anything else
+that is not defined previously will be matched by default route, and NotFound view will be rendered.</p>
+
+<h1>Navigation View</h1>
+
+<h2>Bootstrap NavBar</h2>
+
+<p>Before we dive into Backbone.View, let&rsquo;s see our html code for the navigation bar. Place this inside your index.html</p>
+
+<p><em>index.html</em></p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;nav</span> <span class="na">class=</span><span class="s">&quot;navbar navbar-default&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;navbar-header&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;button</span> <span class="na">class=</span><span class="s">&quot;navbar-toggle&quot;</span> <span class="na">type=</span><span class="s">&quot;button&quot;</span> <span class="na">data-toggle=</span><span class="s">&quot;collapse&quot;</span> <span class="na">data-target=</span><span class="s">&quot;#navbar-collapse&quot;</span><span class="nt">&gt;</span>
+          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;sr-only&quot;</span><span class="nt">&gt;</span> Toggle navigation<span class="nt">&lt;/span&gt;</span>
+          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;icon-bar&quot;</span><span class="nt">&gt;&lt;/span&gt;</span>
+          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;icon-bar&quot;</span><span class="nt">&gt;&lt;/span&gt;</span>
+          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">&quot;icon-bar&quot;</span><span class="nt">&gt;&lt;/span&gt;</span>
+        <span class="nt">&lt;/button&gt;</span>
+        <span class="nt">&lt;a</span> <span class="na">class=</span><span class="s">&quot;navbar-brand&quot;</span> <span class="na">href=</span><span class="s">&#39;#&#39;</span><span class="nt">&gt;</span> Simple Blog <span class="nt">&lt;/a&gt;</span>
+      <span class="nt">&lt;/div&gt;</span>
+
+      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;collapse navbar-collapse&quot;</span> <span class="na">id=</span><span class="s">&quot;navbar-collapse&quot;</span><span class="nt">&gt;</span>
+           
+        <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">&quot;nav navbar-nav&quot;</span> <span class="na">id=</span><span class="s">&quot;nav-item-container&quot;</span><span class="nt">&gt;</span>
+        <span class="c">&lt;!-- Navigation tabs will be inside #nav-item-container here --&gt;</span>
+        <span class="nt">&lt;/ul&gt;</span>
+      <span class="nt">&lt;/div&gt;</span>
+
+    <span class="nt">&lt;/nav&gt;</span>
+
+     <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;container&quot;</span> <span class="na">id=</span><span class="s">&quot;container&quot;</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;/div&gt;</span></code></pre></div>
+
+
+<p>Our Backbone.View for the navigation tabs will control the <em>#nav-item-container</em>.
+<em>#container</em> element will contain the navigated content.</p>
+
+<h2>Navigation Bar View</h2>
+
+<p>   Backbone views don&rsquo;t determine anything about HTML, it can be used with any templating library. Underscore.js in this
+case. Place this in <em>js/views/nav.js</em></p>
+
+<p><em>js/views/nav.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Navbar</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+
+                <span class="c1">// we pass the NavigationRoutes as an option, later we traverse the routes in render function.</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">routes</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">routes</span><span class="p">;</span>
+
+
+        <span class="c1">// router will fire route event whenever url changes, we rerender our view</span>
+        <span class="c1">// on each url change</span>
+        <span class="nx">Backbone</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;route&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">source</span><span class="p">,</span> <span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
+        <span class="p">},</span> <span class="k">this</span><span class="p">);</span>
+    <span class="p">},</span>
+
+    <span class="c1">// events hash that handles events in our view</span>
+    <span class="nx">events</span><span class="o">:</span> <span class="p">{</span>
+                <span class="c1">// click handler for a navigation tab</span>
+        <span class="s1">&#39;click a&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">source</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">hrefRslt</span> <span class="o">=</span> <span class="nx">source</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">);</span>
+            <span class="nx">Backbone</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">navigate</span><span class="p">(</span><span class="nx">hrefRslt</span><span class="p">,</span> <span class="p">{</span><span class="nx">trigger</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>
+
+            <span class="c1">// Cancel the regular event handing so that we won&#39;t actually</span>
+            <span class="c1">// change URLs We are letting Backbone handle routing</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Clear the view element</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">empty</span><span class="p">();</span>
+
+        <span class="c1">// this is the underscore template for a navigation tab.</span>
+        <span class="kd">var</span> <span class="nx">template</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s2">&quot;&lt;li class=&#39;&lt;%=active%&gt;&#39;&gt;&lt;a href=&#39;&lt;%= url%&gt;&#39;&gt;&lt;%=visible%&gt;&lt;/a&gt;&lt;/li&gt;&quot;</span><span class="p">);</span>
+
+        <span class="c1">// Traverse the NavigationRoutes</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">routes</span><span class="p">)</span>
+        <span class="p">{</span>
+                <span class="c1">// don&#39;t render if route is hidden</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">routes</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">hide</span><span class="p">)</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">template</span><span class="p">({</span><span class="nx">url</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">routes</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">route</span><span class="p">,</span> <span class="nx">visible</span><span class="o">:</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">active</span><span class="o">:</span> <span class="nx">route</span> <span class="o">===</span> <span class="nx">key</span> <span class="o">?</span> <span class="s1">&#39;active&#39;</span><span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">}));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+<p>   Backbone.View&rsquo;s looks complicated at first, render function is used to render the actual view, in our case, its about manipulating the dom. The dom is referenced by <em>this.el</em>, equal to
+<em>#nav-item-container</em>. <em>this.$el</em> references the jquery dom object, equal to <em>$(&lsquo;#nav-item-container&rsquo;)</em>. We don&rsquo;t set <em>this.el</em> in this code
+we will pass it as parameter when we initialize our view later.</p>
+
+<p>   <em>template</em> variable defines an <a href="http://underscorejs.org/#template">underscore template</a>. It is our navigation tab. A json model is passed to the template to render actual html.
+   Finally html is appended to <em>this.$el</em>. This is done for each element in <em>NavigationRoutes</em>. We can add any logic we wan&rsquo;t here to render, for now,
+we only use <em>hide</em> property for the <em>NavigationRoutes</em> to control if a link should be rendered or not.</p>
+
+<h2>Navigated Content View</h2>
+
+<p>Next, we define a view for navigated content. It will control the <em>#container</em> element.</p>
+
+<p><em>js/views/nav.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Content</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// pass the NavigationRoutes as an option</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">routes</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">routes</span><span class="p">;</span>
+
+        <span class="c1">// Listen for route changes, and render when a route changes.</span>
+        <span class="nx">Backbone</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;route&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">source</span><span class="p">,</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
+        <span class="p">},</span> <span class="k">this</span><span class="p">);</span>
+    <span class="p">},</span>
+
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">route</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">html</span><span class="p">((</span><span class="k">new</span> <span class="k">this</span><span class="p">.</span><span class="nx">routes</span><span class="p">[</span><span class="nx">route</span><span class="p">].</span><span class="nx">view</span><span class="p">()).</span><span class="nx">render</span><span class="p">().</span><span class="nx">el</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+<p>This is a bit simpler, tricky part is the render function. Here, we initialize the <em>view</em> property defined in our <em>NavigationRoutes</em>, <em>view</em> contains
+the Backbone.View elements for each route. Call the render method for the View element. <em>render</em> method will return the Backbone.View, (we will define that later) , so we can access the el property. Finally we set <em>this.$el.html</em> to the dom element of the route view.</p>
+
+<p>Phew, that&rsquo;s quite hard to explain, hope it becomes clear later.</p>
+
+<h2>Individual Route Views</h2>
+
+<p>Next, we define the route views, these will be rendered into the <em>#container</em>. Place this in your <em>js/views/main.js</em>.</p>
+
+<p><em>js/views/main.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Home</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+
+    <span class="nx">template</span><span class="o">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#home-template&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">()),</span>
+    
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        
+    <span class="p">},</span>
+
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="c1">// Set the html to the template</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">());</span>
+
+        <span class="c1">// We return this, so parent view can access the this.el property</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+
+<span class="kd">var</span> <span class="nx">About</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+    <span class="nx">template</span><span class="o">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#about-template&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">()),</span>
+    
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        
+    <span class="p">},</span>
+
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">());</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+
+<span class="kd">var</span> <span class="nx">NotFound</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+    <span class="nx">template</span><span class="o">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#404-template&#39;</span><span class="p">).</span><span class="nx">html</span><span class="p">()),</span>
+    
+    <span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        
+    <span class="p">},</span>
+
+    <span class="nx">render</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">html</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">());</span>
+        <span class="k">return</span> <span class="k">this</span><span class="p">;</span>    <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+<p>Each view defines an underscore template property. Templates are initialized with some html from jquery dom elements. We will define them later in our index.html. <em>render</em> method simply sets the view&rsquo;s el property to the underscore template, and returns the view which was used in our navigated content view.</p>
+
+<h3>Route View Templates</h3>
+
+<p>We define these templates in our index.html.</p>
+
+<p><em>index.html</em></p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&#39;text/template&#39;</span> <span class="na">id=</span><span class="s">&#39;home-template&#39;</span><span class="nt">&gt;</span>
+       <span class="nx">Home</span>
+    <span class="nt">&lt;/script&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&#39;text/template&#39;</span> <span class="na">id=</span><span class="s">&#39;about-template&#39;</span><span class="nt">&gt;</span>
+      <span class="nx">About</span>
+    <span class="nt">&lt;/script&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&#39;text/template&#39;</span> <span class="na">id=</span><span class="s">&#39;404-template&#39;</span><span class="nt">&gt;</span>
+      <span class="nx">Oops</span><span class="p">..</span>
+    <span class="nt">&lt;/script&gt;</span></code></pre></div>
+
+
+<p> Since these templates should not be readily visible in the page, we wrap them in script tags and give each an id. We referenced these templates
+with jquery before.</p>
+
+<p>While we&rsquo;re at it, let&rsquo;s add the new script files we&rsquo;ve created to the index.html as well.</p>
+
+<p><em>index.html</em></p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;/js/views/nav.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;/js/views/main.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;/js/app.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span></code></pre></div>
+
+
+<h1>Main Function</h1>
+
+<p><em>js/app.js</em></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+    <span class="k">new</span> <span class="nx">Navbar</span><span class="p">({</span><span class="nx">el</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#nav-item-container&#39;</span><span class="p">),</span> <span class="nx">routes</span><span class="o">:</span> <span class="nx">NavigationRoutes</span><span class="p">});</span>
+    <span class="k">new</span> <span class="nx">Content</span><span class="p">({</span><span class="nx">el</span><span class="o">:</span><span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#container&#39;</span><span class="p">),</span> <span class="nx">routes</span><span class="o">:</span> <span class="nx">NavigationRoutes</span><span class="p">});</span>
+
+
+    <span class="nx">Backbone</span><span class="p">.</span><span class="nx">history</span><span class="p">.</span><span class="nx">start</span><span class="p">({</span><span class="nx">pushState</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+
+<p>Finally the main function, initializes <em>Navbar</em> and <em>Content</em> views. And calls <em>Backbone.history.start</em>
+We pass the el property for the views here as mentioned previously. and <em>NavigationRoutes</em> is passed as an option.</p>
+
+<p>By default backbone routes the url&rsquo;s with a containing # symbol.
+<em>Backbone.history.start</em> is passed <em>pushState:true</em> parameter, to get rid of the #.</p>
+
+<blockquote><p>Congratz, now you have a working implementation of a navigated content using backbone.js</p></blockquote>
+
+<h1>Final Touch</h1>
+
+<p>As a final touch, let&rsquo;s put some html inside our <em>#home-template</em> so it looks more like a blog.</p>
+
+<p><em>index.html</em></p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&#39;text/template&#39;</span> <span class="na">id=</span><span class="s">&#39;home-template&#39;</span><span class="nt">&gt;</span>
+
+      <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;row&quot;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;col-lg-12&quot;</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="nx">h1</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;page-header&quot;</span><span class="o">&gt;</span> <span class="nx">Blog</span> <span class="nx">Home</span> <span class="o">&lt;</span><span class="nx">small</span><span class="o">&gt;</span> <span class="nx">Blog</span> <span class="nx">Homepage</span><span class="o">&lt;</span><span class="err">/small&gt;&lt;/h1&gt;</span>
+          <span class="o">&lt;</span><span class="nx">ol</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;breadcrumb&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="o">&gt;</span><span class="nx">Home</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;active&quot;</span><span class="o">&gt;</span><span class="nx">Blog</span> <span class="nx">Home</span> <span class="o">&lt;</span><span class="err">/li&gt;</span>
+          <span class="o">&lt;</span><span class="err">/ol&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+        
+      <span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+      <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;row&quot;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;col-lg-8&quot;</span> <span class="nx">id</span><span class="o">=</span><span class="s2">&quot;blog-list-view&quot;</span><span class="o">&gt;</span>
+
+          
+          <span class="o">&lt;</span><span class="nx">ul</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;pager&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;previous&quot;</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="o">&gt;&amp;</span><span class="nx">larr</span><span class="p">;</span> <span class="nx">Older</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;next&quot;</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="o">&gt;</span><span class="nx">Newer</span> <span class="o">&amp;</span><span class="nx">rarr</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+          <span class="o">&lt;</span><span class="err">/ul&gt;</span>
+          
+          <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">id</span><span class="o">=</span><span class="s2">&quot;blog-list-container&quot;</span><span class="o">&gt;&lt;</span><span class="err">/div&gt;</span>
+          
+          <span class="o">&lt;</span><span class="nx">ul</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;pager&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;previous&quot;</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="o">&gt;&amp;</span><span class="nx">larr</span><span class="p">;</span> <span class="nx">Older</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+            <span class="o">&lt;</span><span class="nx">li</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;next&quot;</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="o">&gt;</span><span class="nx">Newer</span> <span class="o">&amp;</span><span class="nx">rarr</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+          <span class="o">&lt;</span><span class="err">/ul&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+        <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;col-lg-4&quot;</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;well&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">h4</span><span class="o">&gt;</span> <span class="nx">Blog</span> <span class="nx">Search</span> <span class="o">&lt;</span><span class="err">/h4&gt;</span>
+            <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;input-group&quot;</span><span class="o">&gt;</span>
+              <span class="o">&lt;</span><span class="nx">input</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text&quot;</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;form-control&quot;</span><span class="o">&gt;</span>
+              <span class="o">&lt;</span><span class="nx">span</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;input-group-btn&quot;</span><span class="o">&gt;</span>
+                <span class="o">&lt;</span><span class="nx">button</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;btn btn-default&quot;</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="o">&gt;&amp;</span><span class="nx">nbsp</span><span class="p">;</span><span class="o">&lt;</span><span class="nx">i</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;fa fa-search&quot;</span><span class="o">&gt;&lt;</span><span class="err">/i&gt; &lt;/button&gt;</span>
+              <span class="o">&lt;</span><span class="err">/span&gt;</span>
+            <span class="o">&lt;</span><span class="err">/div&gt;</span>
+          <span class="o">&lt;</span><span class="err">/div&gt;</span>
+
+          <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;well&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">h4</span><span class="o">&gt;</span><span class="nx">Popular</span> <span class="nx">Blog</span> <span class="nx">Categories</span><span class="o">&lt;</span><span class="err">/h4&gt;</span>
+            <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;row&quot;</span><span class="o">&gt;</span>
+              <span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;col-lg-6&quot;</span><span class="o">&gt;</span>
+                <span class="o">&lt;</span><span class="nx">ul</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;list-unstyled&quot;</span><span class="o">&gt;</span>
+                  <span class="o">&lt;</span><span class="nx">li</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;somestuff&quot;</span><span class="o">&gt;</span><span class="nx">some</span> <span class="nx">stuff</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+                  <span class="o">&lt;</span><span class="nx">li</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;somestuff&quot;</span><span class="o">&gt;</span><span class="nx">some</span> <span class="nx">stuff</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+                  <span class="o">&lt;</span><span class="nx">li</span><span class="o">&gt;&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;somestuff&quot;</span><span class="o">&gt;</span><span class="nx">some</span> <span class="nx">stuff</span><span class="o">&lt;</span><span class="err">/a&gt;&lt;/li&gt;</span>
+                <span class="o">&lt;</span><span class="err">/ul&gt;</span>
+              <span class="o">&lt;</span><span class="err">/div&gt;</span>
+            <span class="o">&lt;</span><span class="err">/div&gt;</span>
+          <span class="o">&lt;</span><span class="err">/div&gt;</span>
+        <span class="o">&lt;</span><span class="err">/div&gt;</span>
+      <span class="o">&lt;</span><span class="err">/div&gt;</span>
+      
+      
+    <span class="nt">&lt;/script&gt;</span></code></pre></div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Setting Up the Server]]></title>
+    <link href="http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
+    <updated>2013-12-31T02:52:07+02:00</updated>
+    <id>http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
+    <content type="html"><![CDATA[<p>Getting Started Full Stack - Building a simple blog - Part 1</p>
+
+<p> In this post, we will install the required components to build a simple blog. In the end of this post, you will be serving a hello world page, with a responsive bootstrap theme, and all necessary script files.</p>
+
+<h1>Server Side:</h1>
+
+<dl>
+<dt><a href="http://nodejs.org">Node.js</a></dt>
+<dd>Host the website, on javascript platform, based on Google&rsquo;s <a href="https://code.google.com/p/v8/">V8</a> JavaScript Engine</dd>
+<dt><a href="http://expressjs.com/guide.html">Express</a></dt>
+<dd>Web application framework for node.js</dd>
+<dt><a href="http://docs.mongodb.org/manual/installation">Mongodb</a></dt>
+<dd>Open-Source NoSQL database written in C++. Also look at <a href="mongoosejs.com/docs/index.html">Mongoosejs</a>, simple mongodb driver for nodejs.</dd>
+<dt><a href="http://bower.io">Bower</a></dt>
+<dd>Package manager for the web. Simplifies installing client side resources.</dd>
+</dl>
+
+<h1>Client Side:</h1>
+
+<dl>
+<dt><a href="http://getbootstrap.com/getting-started">Bootstrap</a></dt>
+<dd>Responsive front-end css framework.</dd>
+<dt><a href="http://jquery.com/download">JQuery</a></dt>
+<dd>Javascript, for interactive webpages.</dd>
+<dt><a href="http://backbonejs.org">Backbone.js</a></dt>
+<dd>Gives structure to web applications. Models, Collections and Views.</dd>
+</dl>
+
+<h1>Let&rsquo;s get Started</h1>
+
+<h2>Introduction</h2>
+
+<p>Building a simple blog, solving problems along the path, it&rsquo;s gonna be fun.</p>
+
+<h3>Web Server</h3>
+
+<p>Nodejs hosts the website. Serving pages, scripts and stylesheets.
+Expressjs is a web application framework, simplifies dealing with serving pages.
+It uses middleware to extend functionality like plugins.</p>
+
+<h3>Database</h3>
+
+<p>Mongodb our nosql database. it has no relational tables, but nested documents.
+Mongoosejs is our driver for mongodb on nodejs. Model schemas and operate.</p>
+
+<h3>Content Management</h3>
+
+<p>Bower downloads scripts and stylesheets from web into our path, we will simply reference it.</p>
+
+<h3>CSS Theme</h3>
+
+<p>Bootstrap gives the site a nice look. Responsive, meaning it will behave when resized, looks nice on any device.</p>
+
+<h3>Javascript</h3>
+
+<p>JQuery, main dependency for manipulating dom.
+Backbone.js is mvc framework for building client side interaction.</p>
+
+<blockquote><p>Backbone.js is lightweight, and heavily depends on Jquery, a popular alternative is <a href="http://angularjs.org">angularjs</a>. Angular.js doesn&rsquo;t need Jquery, and is a higher level framework.</p>
+
+<p>Backbone.js doesn&rsquo;t implement templating. Templating is supported by mainly <a href="http://underscorejs.org/#template">underscore.js</a> or other libraries. (<a href="http://handlebarsjs.com/">handlebarsjs</a>, <a href="http://mustache.github.io/">mustache</a>)</p>
+
+<p>Backbone.js will teach us more about structure, templating, jquery, and javascript. We should move to higher level frameworks later on. (possibly built on backbonejs) Finally, backbonejs isn&rsquo;t bound to SPA&rsquo;s, we may use it for other projects later on (more coming after this).</p></blockquote>
+
+<h2>Installation</h2>
+
+<p><code>I use ubuntu/linux you should find a way to install on your platform, read the guides and google.</code></p>
+
+<h2>Npm, Node.js</h2>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># install node.js</span>
+sudo add-apt-repository -y ppa:chris-lea/node.js
+sudo apt-get update
+sudo apt-get install nodejs
+
+<span class="c"># test should look like: v0.10.12</span>
+node -v</code></pre></div>
+
+
+<p>Or,
+follow the <a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">Instructions</a></p>
+
+<p>This will also install npm package manager. Npm is used to install packages required by node.js.</p>
+
+<h2>Mongodb</h2>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># install mongodb</span>
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+<span class="nb">echo</span> <span class="s1">&#39;deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen&#39;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/mongodb.list
+sudo apt-get update
+sudo apt-get install mongodb-10gen
+
+<span class="c"># test should bring mongo shell, Ctrl-c to break</span>
+mongo</code></pre></div>
+
+
+<p>More <a href="http://docs.mongodb.org/manual/installation/">Instructions</a></p>
+
+<h2>Bower</h2>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#install bower</span>
+npm install -g bower
+<span class="c"># test should look like: 1.2.8</span>
+bower -v</code></pre></div>
+
+
+<p>More <a href="http://bower.io">Instructions</a></p>
+
+<blockquote><p>Congratz, this is enough to host our simple blog. We will learn these tools along the way. Now let&rsquo;s build our codebase.</p></blockquote>
+
+<h1>Directory Structure</h1>
+
+<p>Build the following directory structure. public folder will host our public pages, scripts and stylesheets. &lsquo;scripts&rsquo; folder will host javascript code for running the nodejs server, interacting with mongodb.</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">../mysimpleblog
+<span class="sb">`</span>-- app
+    <span class="p">|</span>-- public
+    <span class="p">|</span>   <span class="sb">`</span>-- js
+    <span class="p">|</span>       <span class="p">|</span>-- collections
+    <span class="p">|</span>       <span class="p">|</span>-- models
+    <span class="p">|</span>       <span class="p">|</span>-- routers
+    <span class="p">|</span>       <span class="sb">`</span>-- views
+    <span class="sb">`</span>-- scripts</code></pre></div>
+
+
+<h1>Configuration</h1>
+
+<h2>Package.json</h2>
+
+<div><script src='https://gist.github.com/e0ae625587d0f578a8e0.js'></script>
+<noscript><pre><code>{
+    &quot;name&quot;: &quot;Simple_Blog&quot;,
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;description&quot; : &quot;A simple blog with backbone.js&quot;,
+    &quot;dependencies&quot; : {
+        &quot;express&quot;: &quot;latest&quot;,
+        &quot;baucis&quot;: &quot;latest&quot;,
+        &quot;connect&quot;: &quot;latest&quot;
+    }
+    
+}</code></pre></noscript></div>
+
+
+<p><a href="http://package.json.nodejitsu.com/">package.json</a> is a packaging format for node.js.
+Important part here is dependencies, where we declare dependencies for our project.
+Place it in root folder of your project, where your app folder resides.</p>
+
+<p><a href="expressjs.com">express</a> : web application framework, It uses middleware to handle http requests.
+Middleware could be third party code, which we will use shortly.</p>
+
+<p><a href="https://github.com/wprl/baucis">baucis</a> : Baucis is Express middleware that creates configurable REST APIs using Mongoose schemata</p>
+
+<p><a href="https://github.com/senchalabs/connect">connect</a> : Lower level middleware for node.js, not important for us any time soon. baucis needs it so we include.</p>
+
+<h2>.bowerrc</h2>
+
+<div><script src='https://gist.github.com/61b1ed8e2fee1d347c2f.js'></script>
+<noscript><pre><code>{
+        &quot;directory&quot;: &quot;app/public/bower_components&quot;
+}</code></pre></noscript></div>
+
+
+<p><a href="http://stackoverflow.com/questions/14079833/how-to-change-bowers-default-components-folder">.bowerrc</a> file will change bower&rsquo;s default components folder. Place it in root folder of your project.</p>
+
+<h1>Installing packages</h1>
+
+<p>Server side dependencies are defined in package.json, and installed with npm. Client side dependencies are defined in bower.json and installed with bower.</p>
+
+<p>However we won&rsquo;t be using bower.json rather install the required files manually.</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># install server side packages (defined in package.json)</span>
+npm install
+<span class="c">#install client side packages manually with bower</span>
+bower install bootstrap
+bower install fontawesome
+
+bower install jquery
+bower install backbonejs
+bower install underscore</code></pre></div>
+
+
+<p>Server side packages can be directly used in javascript code, we will see how that&rsquo;s done later. Client side packages are simply files downloaded in directory we defined in .bowerrc so you can check it out there. We will reference them in our index.html.</p>
+
+<h1>Setting up the server</h1>
+
+<p>Final step is to actually setup the server, so we can host our files. Go to app/scripts directory and create the two files below.</p>
+
+<div><script src='https://gist.github.com/938cd7857d3480f63d7a.js'></script>
+<noscript><pre><code>var path = require('path');
+// File IO module
+var fs = require('fs');
+// This is how you export things to other modules. 
+// See routes.index usage in web.js routes.index is 
+// replaced by this function.
+// This function is a middleware for handling http requests
+exports.index = function(req, res) {
+    // read index.html and send as response
+    fs.readFile(path.join(__dirname, '../public/index.html'), 'utf8', function(err, text) {
+        res.send(text);
+    });
+}</code></pre></noscript></div>
+
+
+<p>Further information:
+<a href="http://stackoverflow.com/questions/12695591/node-js-express-js-how-does-app-router-work">middleware</a> ,
+<a href="http://stackoverflow.com/questions/5311334/what-is-the-purpose-of-nodejs-module-exports-and-how-do-you-use-it">require</a> .</p>
+
+<p>Finally we need an index.html to serve, and we are ready to launch. Go to app/public directory and create the file below.</p>
+
+<div><script src='https://gist.github.com/917ed8e8f24570f696fa.js?file=index.html'></script>
+<noscript><pre><code>&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Simple Blog&lt;/title&gt;
+
+    
+    &lt;link href=&quot;/bower_components/bootstrap/dist/css/bootstrap.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;link href=&quot;/bower_components/font-awesome/css/font-awesome.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+
+
+    &lt;nav class=&quot;navbar navbar-default&quot;&gt;
+      &lt;div class=&quot;navbar-header&quot;&gt;
+        &lt;button class=&quot;navbar-toggle&quot; type=&quot;button&quot; data-toggle=&quot;collapse&quot; data-target=&quot;#navbar-collapse&quot;&gt;
+          &lt;span class=&quot;sr-only&quot;&gt; Toggle navigation&lt;/span&gt;
+      &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;a class=&quot;navbar-brand&quot; href='#'&gt; Simple Blog &lt;/a&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;collapse navbar-collapse&quot; id=&quot;navbar-collapse&quot;&gt;
+        &lt;ul class=&quot;nav navbar-nav&quot; id=&quot;nav-item-container&quot;&gt;
+    &lt;/ul&gt;
+      &lt;/div&gt;
+
+    &lt;/nav&gt;
+    
+    &lt;div class=&quot;container&quot; id=&quot;container&quot;&gt;
+      &lt;h1&gt; Hello World &lt;/h1&gt;
+    &lt;/div&gt;
+
+
+      &lt;script src=&quot;/bower_components/jquery/jquery.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/bootstrap/dist/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/underscore/underscore-min.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;/bower_components/backbone/backbone-min.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+  
+&lt;/html&gt;</code></pre></noscript></div>
+
+
+<h1>Launch Time</h1>
+
+<p>To run the server go to app folder and run:</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># test: output should be </span>
+   <span class="c"># - listening on port 3000</span>
+   node ./scripts/web</code></pre></div>
+
+
+<p>Now launch your browser and locate to <a href="http://localhost:3000.">http://localhost:3000.</a></p>
+
+<p>One final note here is that, if you make changes inside app/public
+folder, a browser refresh is enough to see the changes, if you make
+changes inside app/scripts folder, you need to restart the server, in
+order to changes to take effect. There are tools to live reload every
+change but that&rsquo;s for a later time.</p>
+
+<blockquote><p>Please share your thoughts below. Thank you.</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>

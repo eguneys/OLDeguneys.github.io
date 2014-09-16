@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Mongoose | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/mongoose/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-16T23:29:48+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Building API With Baucis]]></title>
+    <link href="http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
+    <updated>2014-01-06T11:52:06+02:00</updated>
+    <id>http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
+    <content type="html"><![CDATA[<p>In previous post, we&rsquo;ve seen how to navigate in our site using
+backbone.js. In this post, we will go back to server side, and build
+our blog api using <a href="https://github.com/wprl/baucis">baucis</a>. At the
+end of this tutorial, you will be able to query your mongodb database
+and pull blog information.</p>
+
+<h1>Building Schemas with Mongoose</h1>
+
+<p>Firstly, let&rsquo;s define our blog schema. We will use
+<a href="http://mongoosejs.com">mongoose</a> to interact with mongodb. Go to
+app/scripts directory and create a new file named schemas.js.</p>
+
+<p><em>app/scripts/schemas.js</em></p>
+
+<p><div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">mongoose</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">baucis</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">baucis</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// Define journal schema</span>
+<span class="kd">var</span> <span class="nx">journalSchema</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+    <span class="nx">paper</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="nb">String</span><span class="p">},</span>
+    <span class="nx">author</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">photo</span><span class="o">:</span> <span class="nb">String</span> <span class="p">},</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">body</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">date</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">Date</span><span class="p">,</span> <span class="k">default</span><span class="o">:</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">},</span>
+    <span class="nx">meta</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">votes</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">favs</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">tags</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">lowercase</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">trim</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// db connection string</span>
+<span class="kd">var</span> <span class="nx">MONGO_URI</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGOHQ_URI</span> <span class="o">||</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">mongodb</span><span class="o">:</span><span class="c1">//localhost/test&amp;rsquo;;&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// connect to mongodb with mongoose</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="nx">MONGO_URI</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// define a journal model with journalSchema</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">journal</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">journalSchema</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// use baucis to create a rest api</span>
+<span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="nx">baucis</span><span class="p">.</span><span class="nx">rest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">journal</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>We created a blog schema, connected to our database, defined a model
+based on our schema, and finally used baucis to create the rest api.
+Now if you run your server, your api will be available at:</p>
+
+<p>*<a href="http://localhost/api*">http://localhost/api*</a> endpoint.</p>
+
+<p>Here is a table, describing available functions:</p>
+
+<table>
+<thead>
+<tr>
+<th> HTTP Verb     </th>
+<th> /journals   </th>
+<th> /journals/:id </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> GET           </td>
+<td> Get all or a subset of documents </td>
+<td> Get the addressed document </td>
+</tr>
+<tr>
+<td> POST          </td>
+<td> Creates new documents and sends them back.  You may post a single document or an array of documents.      </td>
+<td> n/a </td>
+</tr>
+<tr>
+<td> PUT           </td>
+<td> n/a </td>
+<td> Update the addressed document </td>
+</tr>
+<tr>
+<td> DELETE        </td>
+<td> Delete all or a subset of documents </td>
+<td> Delete the addressed object </td>
+</tr>
+</tbody>
+</table>
+
+
+<p>To test it go to *<a href="http://localhost/api/journals*">http://localhost/api/journals*</a> in your browser, it
+should return an empty array. Because we don&rsquo;t have any blogs in our
+database yet.</p>
+
+<h1>Using Mongo Shell</h1>
+
+<p>Though we can post blogs to our database using the api, we will simply
+create blogs using the mongo shell. Mongo shell is CLI for using
+mongodb. run <em>mongo</em> in your console to open the shell. Issue the
+following commands to create your first blog entry.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># This is for commenting</span>
+   <span class="c"># just ignore it.&lt;/p&gt;</span>
+
+&lt;p&gt;   <span class="c"># List databases</span>
+   show dbs&lt;/p&gt;
+
+&lt;p&gt;   <span class="c"># Choose database, test</span>
+   use <span class="nb">test</span>&lt;/p&gt;
+
+&lt;p&gt;   <span class="c"># List collections in the database</span>
+   show collections&lt;/p&gt;
+
+&lt;p&gt;   <span class="c"># journals collection is created when we created a model with mongoose.</span>
+   <span class="c"># collection is the plural form of our model.&lt;/p&gt;</span>
+
+&lt;p&gt;   <span class="c">#list the contents in journals collection</span>
+   <span class="c"># it should be empty</span>
+   db.journals.find<span class="o">()</span>&lt;/p&gt;
+
+&lt;p&gt;   <span class="c"># place a new blog entry in journals collection</span>
+   <span class="c"># here we define only title and body attributes, you can define other attributes as well&lt;/p&gt;</span>
+
+&lt;p&gt;   db.journals.create<span class="o">({</span>title: <span class="p">&amp;</span>lsquo<span class="p">;</span>My Simple Blog 1<span class="p">&amp;</span>rsquo<span class="p">;</span>, body: <span class="p">&amp;</span>lsquo<span class="p">;</span>Simple body <span class="k">for</span> testing<span class="p">&amp;</span>rsquo<span class="p">;</span> <span class="o">})</span>&lt;/p&gt;
+
+&lt;p&gt;   <span class="c"># list the contents again to see the newly created blog</span>
+   db.journals.find<span class="o">()</span>&lt;/p&gt;
+
+&lt;p&gt;</code></pre></div></p>
+
+<p>Mongo shell is interpreting javascript code here, so use
+javascript. Undefined attributes will have their defaults value We can
+disable null values for attributes, but for simplicity we don&rsquo;t.</p>
+
+<p>Now go to <a href="http://localhost/api/journals">http://localhost/api/journals</a> again and see the newly created blog entry.</p>
+
+<blockquote><p>In the next post, we will consume this api with backbone.js and list
+the blogs in our main page.</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>
