@@ -8,12 +8,14 @@ subtitle: A blog about javascript fullstack development.
 author: Emre Guneyler
 simple_search: https://www.google.com/search
 description: Blog about javascript, nodejs, emberjs, backbone, requirejs, yeoman, phaser, web development, game development, and anything that interests me about software.
+background: pingtech-bg.jpg
 
 # HPSTR Properties
 
 keywords: javascript nodejs emberjs backbone phaser requirejs yeoman web-development game-development
 avatar: /images/avatar.jpg
 author_bio: Fullstack Hipster
+author_about: /about
 links:
   - title: JS Games
     url: http://jsgamesonline.com
