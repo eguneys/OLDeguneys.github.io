@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Sequelize | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/sequelize/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-17T13:01:31+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Voting App: REST API /w Sequelize]]></title>
+    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
+    <updated>2014-09-17T12:15:56+03:00</updated>
+    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p><a href="http://sequelizejs.com">Sequelize</a> is an ORM (Object Relational Mapper) for NodeJS that provides easy access to various databases like MySQL, MariaDB, SQLite, or PostgreSQL.</p>
+
+<p>It has a nice website with helpful documentation and <a href="https://github.com/sequelize/sequelize/tree/master/examples">examples</a> to get started. Also there is an IRC channel #sequelizejs on Freenode.</p>
+
+<p>In this article we will build a voting application where users can vote for a poll and we will record their <code>IP</code> so they cannot vote twice. We will use <code>sequelize</code> to model our data and build a <code>REST API</code>. Later we will build the front end using <code>emberjs</code>.</p>
+
+<h2>Scaffold Voting Application</h2>
+
+<p>Since we are using <code>emberjs</code> we might use <code>ember-cli</code> for our project. But, yet recently I published a yeoman generator <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a> for emberjs fullstack projects like the one we are building now. It does all the scaffolding for emberjs on the client side and expressjs on the server side. So we will use it for this article.</p>
+
+<p>You can install using the command:</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">npm install -g generator-emberfs
+  yo emberfs</code></pre></div></p>
+
+<h3>Directory Structure</h3>
+
+<p>This is our directory structure for voting application. <code>config</code> folder contains the initial server code and configuration files. <code>app/models</code>, <code>app/routes</code> and <code>app/views</code> folders contain our server side models, routes, and views respectively. <code>db</code> folder is for the sqlite database file and code for our database seed.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|&amp;</span>ndash<span class="p">;</span> app
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> models
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> index.js
+<span class="p">|</span>   <span class="p">|</span>   &lt;code&gt;-- poll.js
+<span class="p">|</span>   <span class="p">|</span>-- routes
+<span class="p">|</span>   <span class="p">|</span>--&lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> api.js
+<span class="p">|</span>   &lt;code&gt;-- views
+<span class="p">|</span>      &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> layouts
+<span class="p">|&amp;</span>ndash<span class="p">;</span> config
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> app.js
+<span class="p">|</span>   &lt;code&gt;-- server.js
+<span class="p">|</span>
+&lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> db
+    <span class="p">|&amp;</span>ndash<span class="p">;</span> development.sqlite
+    <span class="sb">`</span><span class="p">&amp;</span>ndash<span class="p">;</span> seed.js</code></pre></div></p>
+
+<p>We will define only routes for the REST API so we won&rsquo;t mention about the <code>app/views</code> folder here.</p>
+
+<p>Note that this folder structure is boilerplate for the <code>generator-emberfs</code>. So you won&rsquo;t need to do the tedious work if you use it.</p>
+
+<h2>Models in Sequelize</h2>
+
+<p>This is our model diagram. <em>Poll</em> is a <em>question</em> and has many <em>Choices</em>. <em>Choice</em> is a poll choice with a <em>text</em> and <em>description</em> and has many <em>Votes</em>. <em>Vote</em> has an <em>ip</em> that identifies the voter, so we can make sure one ip can vote only once.</p>
+
+<p><a href="vote_diagram.png">image</a></p>
+
+<p>All our models are in file <code>app/models/poll.js</code>. Later we will import them.</p>
+
+<p><strong>Vote</strong> model is simple, just a single field <code>ip</code> and has no relationships. It also has some helpers methods which I will mention later.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">Vote</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Vote</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">{</span>
+    <span class="nx">ip</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+    <span class="c1">// &amp;hellip; define model fields here</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// define relationships here</span>
+      <span class="p">}</span>
+        <span class="c1">// &amp;hellip; define class methods here</span>
+    <span class="p">}</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p><strong>Choice</strong> model has two fields, <code>text</code> and <code>description</code>, and has one-to-many relationship with the <em>Vote</em> model. We define the relationships in a class method named <em>associate</em>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">Choice</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Choice</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">{</span>
+    <span class="nx">text</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span><span class="p">,</span>
+    <span class="nx">description</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">Choice</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">Vote</span><span class="p">,</span> <span class="p">{</span> <span class="nx">as</span> <span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">votes</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p><strong>Poll</strong> model has one field <em>question</em>, and has one-to-many relationship with the <em>Choice</em> model.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">Poll</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Poll</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">{</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">Poll</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">Choice</span><span class="p">,</span> <span class="p">{</span> <span class="nx">as</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div></p>
+
+<h3>Import all models in Sequelize</h3>
+
+<p>Now we have defined our models, we need to import them with sequelize. We will do that in file <code>app/models/index.js</code>.</p>
+
+<p>In our example we have only one file defining our models namely <code>app/models/poll.js</code>. But we can have more than that, and we will import all the files in <code>app/models</code> folder.</p>
+
+<p>First let&rsquo;s require our dependencies, and initialize Sequelize. <code>votes-app-db</code> is the name of our database.</p>
+
+<p>We are using <code>sqlite</code> for the database and <code>./db/development.sqlite</code> file for the database. <code>sqlite</code> is a zero-configuration, serverless database. It works directly from the database files on disk.</p>
+
+<p><code>File: app/models/index.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">fs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+  <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">path</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+  <span class="nx">lodash</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">lodash</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+  <span class="nx">Sequelize</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">sequelize</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+  <span class="nx">sequelize</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="p">{};</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">sequelize</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Sequelize</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">votes</span><span class="o">-</span><span class="nx">app</span><span class="o">-</span><span class="nx">db</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kc">null</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">dialect</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">sqlite</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+  <span class="nx">storage</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;.</span><span class="o">/</span><span class="nx">db</span><span class="o">/</span><span class="nx">development</span><span class="p">.</span><span class="nx">sqlite</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Before we import the models, let&rsquo;s see how we export our models in <code>app/models/poll.js</code>.</p>
+
+<p><code>File: app/models/poll.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">Sequelize</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">sequelize</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sequelize</span><span class="p">,</span> <span class="nx">DataTypes</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// I omit the definitions.</span>
+  <span class="kd">var</span> <span class="nx">Vote</span><span class="p">,</span> <span class="nx">Poll</span><span class="p">,</span> <span class="nx">Choice</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="k">return</span> <span class="p">[</span><span class="nx">Vote</span><span class="p">,</span> <span class="nx">Poll</span><span class="p">.</span> <span class="nx">Choice</span><span class="p">];</span>
+<span class="p">};</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>We export an array of our models. Now let&rsquo;s import each file in <code>app/models</code> to sequelize.</p>
+
+<p><code>File: app/models/index.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">fs</span><span class="p">.</span><span class="nx">readdirSync</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">dirname</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;.</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">amp</span><span class="p">;</span> <span class="p">(</span><span class="nx">file</span> <span class="o">!==</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">index</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+  <span class="p">})</span>
+  <span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">model</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="kr">import</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="o">&lt;</span><span class="err">/strong&gt;dirname, file));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">model</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">model</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">m</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">[</span><span class="nx">m</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">m</span><span class="p">;</span>
+      <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">db</span><span class="p">[</span><span class="nx">model</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">model</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>We filter out the <code>index.js</code> and import every file to sequelize. Later we keep references to our models in <code>db</code> object. Note that our model files can both return an array or a single object, that&rsquo;s what the <em>if</em> condition is checking for.</p>
+
+<p>Finally we call the <code>associate</code> class method for each model that will define the relationships between models. Then we export all the models (<code>db</code> object) along with sequelize.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">db</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">modelName</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">associate</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="k">in</span> <span class="nx">db</span><span class="p">[</span><span class="nx">modelName</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">[</span><span class="nx">modelName</span><span class="p">].</span><span class="nx">associate</span><span class="p">(</span><span class="nx">db</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">lodash</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">sequelize</span><span class="o">:</span> <span class="nx">sequelize</span><span class="p">,</span>
+  <span class="nx">Sequelize</span><span class="o">:</span> <span class="nx">Sequelize</span>
+<span class="p">},</span> <span class="nx">db</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<h3>Seed for the Database</h3>
+
+<p>Next, we seed the database a sample poll with two choices.</p>
+
+<p><code>File: db/seed.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">What</span> <span class="nx">features</span> <span class="nx">would</span> <span class="nx">you</span> <span class="nx">like</span> <span class="nx">to</span> <span class="nx">see</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+  <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">poll</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Choice</span><span class="p">.</span><span class="nx">bulkCreate</span><span class="p">([{</span>
+      <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nx">text</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Improved</span> <span class="nx">UI</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="nx">description</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">New</span><span class="p">,</span> <span class="nx">fancy</span> <span class="kr">interface</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="nx">PollId</span><span class="o">:</span> <span class="nx">poll</span><span class="p">.</span><span class="nx">id</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+      <span class="nx">text</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Improved</span> <span class="nx">Performance</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="nx">description</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Faster</span> <span class="nx">response</span> <span class="nx">times</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="nx">PollId</span><span class="o">:</span> <span class="nx">poll</span><span class="p">.</span><span class="nx">id</span>
+    <span class="p">}]);</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="p">};</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that each model has a <code>create</code> and <code>bulkCreate</code> function. The difference is <code>create</code> takes a single object and <code>bulkCreate</code> takes an array of objects.</p>
+
+<p>One final thing is the <em>choice</em> model instances has an extra attribute, <em>PollId</em>, that is the foreign key referencing the <em>Poll</em> model.</p>
+
+<h3>Helper methods for Models</h3>
+
+<p>We will define two helper methods for the <em>Vote</em> model. They are both defined under the <em>classMethods</em> object (near to <em>associate</em> method).</p>
+
+<p><strong>findCount</strong> method takes a <em>choiceId</em> and finds the number of votes for that choice.</p>
+
+<p><code>File: app/models/poll.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">findCount</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choiceId</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Vote</span><span class="p">.</span><span class="nx">count</span><span class="p">({</span>
+      <span class="nx">where</span><span class="o">:</span> <span class="p">{</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">ChoiceId</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span><span class="o">:</span> <span class="nx">choiceId</span><span class="p">}</span>
+    <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">count</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p><strong>addVote</strong> method takes an <em>ip</em> and a <em>choice</em> and creates a new vote. The trick here is that we have to make sure the given ip doesn&rsquo;t vote twice for the same poll. So we need a nifty sql statement to &ldquo;select all the votes for the poll that the given choice belongs to and that is the same ip as the given ip&rdquo;. This statement will return a single vote if the given ip has voted for the same poll or null if it hasn&rsquo;t.</p>
+
+<p><code>File: app/models/poll.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">addVote</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">choice</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// sequelize translation of the sql command:</span>
+    <span class="c1">//</span>
+    <span class="c1">// select * from votes, choices, polls where</span>
+    <span class="c1">// votes.choiceId == choices.id and choices.pollId ==</span>
+    <span class="c1">// polls.id and choices.id == choice polls.id in</span>
+    <span class="c1">// (select pollId from votes, choices where</span>
+    <span class="c1">// votes.choiceId == choices.id and votes.ip == ip)&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span> <span class="nx">where</span><span class="o">:</span> <span class="nx">Sequelize</span><span class="p">.</span><span class="nx">and</span><span class="p">(</span>
+  <span class="p">{</span>
+    <span class="s1">&#39;choices.id&#39;</span><span class="o">:</span> <span class="nx">choice</span>
+  <span class="p">},</span>
+  <span class="p">{</span><span class="nx">id</span><span class="o">:</span> 
+    <span class="p">{</span> <span class="k">in</span><span class="o">:</span>
+      <span class="nx">Sequelize</span><span class="p">.</span><span class="nx">literal</span><span class="p">(</span><span class="s1">&#39;select &quot;Choices&quot;.&quot;PollId&quot; from &quot;Votes&quot;, &quot;Choices&quot; where &quot;Votes&quot;.&quot;ChoiceId&quot; = &quot;Choices&quot;.&quot;id&quot; and &quot;Votes&quot;.&quot;ip&quot; = \&#39;&#39;</span> <span class="o">+</span> <span class="nx">ip</span> <span class="o">+</span> <span class="s1">&#39;\&#39;&#39;</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}),</span>
+    <span class="nx">include</span><span class="o">:</span> <span class="p">[</span> <span class="p">{</span>
+      <span class="nx">model</span><span class="o">:</span> <span class="nx">Choice</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;choices&#39;</span><span class="p">,</span>
+      <span class="nx">include</span><span class="o">:</span> <span class="p">[{</span> <span class="nx">model</span><span class="o">:</span> <span class="nx">Vote</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;votes&#39;</span> <span class="p">}]}]</span>
+  <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">votes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">votes</span> <span class="o">||</span> <span class="nx">votes</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">Vote</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+        <span class="nx">ip</span><span class="o">:</span> <span class="nx">ip</span><span class="p">,</span>
+        <span class="nx">ChoiceId</span><span class="o">:</span> <span class="nx">choice</span>
+      <span class="p">})</span>
+        <span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">vote</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="s2">&quot;Vote already exists&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>I am sure there is a better way to build this statement in sequelize, but this works too. Note that we make use of <code>Sequelize.literal</code> method that interprets the raw sql command.</p>
+
+<p>Finally upon success, if the vote already exists, we give error, otherwise we create a new vote which builds and saves the vote to the database.</p>
+
+<h2>Routes for Express 4</h2>
+
+<p>Routing in Express 4 is modular and mountable. A <code>Router</code> instance is a complete middleware. But, yet I won&rsquo;t get into detail how to use express routers in this article. For more information check out the express <a href="http://expressjs.com">docs</a> and the <a href="http://expressjs.com/migrating-4.html#routing">migration guide</a>.</p>
+
+<p>All our API routes are in file <code>app/routes/api.js</code>.</p>
+
+<p><code>/polls</code> route lists all the available polls.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">/polls&amp;rsquo;, function(req, res) {</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span>
+      <span class="c1">// you can include choices for the poll, or not.</span>
+      <span class="c1">//include: [{ model: db.Choice, as: &amp;lsquo;choices&amp;rsquo; }]</span>
+    <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">polls</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span>
+        <span class="nx">polls</span><span class="o">:</span> <span class="nx">polls</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that <code>include</code> option enables us to embed the <em>choices</em> for the poll. In our case we opt not to.</p>
+
+<p><code>/polls/:id</code> route gets a single poll with a given id. This time we <em>include</em> the choices for the poll as well. The trick here is for each choice we find the number of votes for that choice, and include the count in the choice model using the <code>setDataValue</code> method.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="sr">/polls/</span><span class="o">:</span><span class="nx">id</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span>
+  <span class="nx">where</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span> <span class="p">},</span>
+  <span class="nx">include</span><span class="o">:</span> <span class="p">[{</span><span class="nx">model</span><span class="o">:</span> <span class="nx">db</span><span class="p">.</span><span class="nx">Choice</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;choices&#39;</span> <span class="p">}]</span>
+<span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">poll</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">async</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">poll</span><span class="p">.</span><span class="nx">choices</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choice</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">findCount</span><span class="p">(</span><span class="nx">choice</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">choice</span><span class="p">.</span><span class="nx">setDataValue</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="nx">count</span><span class="p">);</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">choice</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">poll</span><span class="p">.</span><span class="nx">setDataValue</span><span class="p">(</span><span class="s1">&#39;choices&#39;</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span>
+      <span class="nx">poll</span><span class="o">:</span> <span class="nx">poll</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that we use <em>async</em> library to map <em>poll.choices</em> and add the vote count for each choice. Later we use <code>setDataValue</code> method for the poll model to set the <em>choices</em> to the map results.</p>
+
+<p>We post to <code>/votes</code> route to make a vote. One ip can vote for a poll only once, thanks to our <em>addVote</em> helper method.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">/votes&amp;rsquo;, function(req, res) {</span>
+    <span class="kd">var</span> <span class="nx">ip</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">x</span><span class="o">-</span><span class="nx">forwarded</span><span class="o">-</span><span class="k">for</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]</span> <span class="o">||</span> <span class="nx">req</span><span class="p">.</span><span class="nx">connection</span><span class="p">.</span><span class="nx">remoteAddress</span><span class="p">;</span>
+    <span class="c1">// randomize the ip to test your app</span>
+    <span class="c1">//ip = Math.random();&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">choice</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">vote</span><span class="p">.</span><span class="nx">choice</span><span class="p">;</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">addVote</span><span class="p">(</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">choice</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">vote</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that we use <code>x-forwarded-for</code> header or the <code>req.connection.remoteAddress</code> to get the ip. If you want to test the application so you can have many votes, randomize the ip with <code>Math.random</code>.</p>
+
+<p>Finally <code>/votes/:choiceId</code> route will return the number of votes for a given choice.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="sr">/votes/</span><span class="o">:</span><span class="nx">choiceId</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choice</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">choiceId</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">findCount</span><span class="p">(</span><span class="nx">choice</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span> <span class="nx">vote</span><span class="o">:</span> <span class="nx">count</span> <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<h2>Setup the Server</h2>
+
+<p>Finally we start sequelize, seed the database, and fire up the express server.</p>
+
+<p><code>File: app/config/app.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;.</span><span class="o">/</span><span class="nx">server</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="nx">app</span><span class="o">/</span><span class="nx">models</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">sequelize</span>
+  <span class="p">.</span><span class="nx">sync</span><span class="p">({</span> <span class="nx">force</span><span class="o">:</span> <span class="kc">true</span><span class="p">})</span>
+  <span class="p">.</span><span class="nx">complete</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">throw</span> <span class="nx">err</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="c1">// seed</span>
+      <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="nx">db</span><span class="o">/</span><span class="nx">seed</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)(</span><span class="nx">db</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span>  <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">),</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;express listening on &#39;</span> <span class="o">+</span> <span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">));</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that we require <code>../app/models</code> that exports all the <em>models</em> and <em>sequelize</em> as the <em>db</em> object. Also we require <code>./server</code> that exports the express application. I won&rsquo;t mention about configuring and setting up the express server, it&rsquo;s simple enough and you should do it however you like. For more details check out the full repository at <a href="https://www.github.com/eguneys/voting_app">github</a>.</p>
+
+<h2>Conclusion</h2>
+
+<p>In this article we have built a <code>REST API</code> using <code>sequelize</code> for voting polls. We&rsquo;ve setup models in <code>sequelize</code> provided seed for the database, used query methods for the models, and setup the API routes for the <code>express</code> server. Next up we will build the front end using <code>emberjs</code>.</p>
+
+<p>The full repository is at <a href="https://www.github.com/eguneys/voting_app">github</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

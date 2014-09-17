@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Gulp | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/gulp/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-17T13:01:31+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Let's Build a Yeoman Generator: Project Template /w Gulp]]></title>
+    <link href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/"/>
+    <updated>2014-09-17T12:14:32+03:00</updated>
+    <id>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p><a href="http://yeoman.io">Yeoman</a> is a project scaffolding tool, it defines your work-flow, and scaffolds the boilerplate. <a href="http://gulpjs.com">Gulp</a> is a build system, alternative to grunt, it is stream based, and prefers code over configuration.</p>
+
+<p>In this two series articles we will learn how to build a yeoman generator from scratch, using test driven development. for Phaser game projects, which I before introduced in my previous article. We will use gulp as our build tool and requirejs for module loader.</p>
+
+<p>First step towards a yeoman generator, is building a project template. yeoman is only responsible for scaffolding. The rest is building the project with gulp and having a project template. In this article we will build our project template using gulp and requirejs, in the next article we will introduce yeoman, and start test driven development.</p>
+
+<h2>Initialize Phaser Game Project</h2>
+
+<p>The Phaser is a game framework that runs on browser, as we develop our game, we will run the game on the browser and live reload the changes. We will use npm for our development dependencies, and bower for the front end dependencies.</p>
+
+<p>First we initialize npm.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm init</code></pre></div></p>
+
+<p>This will ask various questions and create a <code>package.json</code> file for us.</p>
+
+<p>Next we initialize bower the same way, and create a <code>bower.json</code> file.
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">bower init</code></pre></div></p>
+
+<h2>Decide a directory structure</h2>
+
+<p>The next step is to decide a directory structure for the project.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|&amp;</span>ndash<span class="p">;</span> app
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> data
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> index.html
+<span class="p">|</span>   &lt;code&gt;-- scripts
+<span class="p">|</span>       <span class="p">|</span>-- app.js
+<span class="p">|</span>       <span class="p">|</span>-- common.js
+<span class="p">|</span>       <span class="p">|</span>-- config.js
+<span class="p">|</span>       <span class="p">|</span>-- lib_main.js
+<span class="p">|</span>       <span class="p">|</span>-- main.js
+<span class="p">|</span>       <span class="p">|</span>-- prefabs
+<span class="p">|</span>      &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> states
+<span class="p">|</span>           <span class="p">|&amp;</span>ndash<span class="p">;</span> boot.js
+<span class="p">|</span>           &lt;code&gt;-- preload.js
+<span class="p">|</span>-- bower.json
+<span class="p">|</span>-- build
+<span class="p">|</span>   <span class="p">|</span>-- wrap.end
+<span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> wrap.start
+<span class="p">|&amp;</span>ndash<span class="p">;</span> gulpfile.js
+<span class="sb">`</span><span class="p">&amp;</span>ndash<span class="p">;</span> package.json&lt;/p&gt;
+
+&lt;p&gt;</code></pre></div></p>
+
+<p><code>app</code> folder is where our application code resides. <code>build</code> folder is for files used by requirejs optimizer. We have our <code>package.json</code>, <code>bower.json</code> and <code>gulpfile.js</code>. The project will compile into <code>public</code> directory as we will see later.</p>
+
+<h3>Configure bower and jshint</h3>
+
+<p>npm will install it&rsquo;s dependencies in the <code>node_modules</code> folder, and bower will install it&rsquo;s dependencies in the <code>bower_components</code> folder, but, yet we can configure the default directory for bower using a <code>.bowerrc</code></p>
+
+<p>Create a <code>.bowerrc</code> file and add these in.</p>
+
+<p><code>File: .bowerrc</code></p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="o">{</span>
+  <span class="p">&amp;</span>ldquo<span class="p">;</span>directory<span class="p">&amp;</span>rdquo<span class="p">;</span>: <span class="p">&amp;</span>ldquo<span class="p">;</span>app/bower_components<span class="p">&amp;</span>rdquo<span class="p">;</span>
+<span class="o">}</span></code></pre></div></p>
+
+<p>Next, create a <code>.jshintrc</code> file. and setup your configuration.</p>
+
+<p>Finally install the bower dependencies and save them in the <code>bower.json</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>bower install requirejs almond phaser <span class="p">&amp;</span>ndash<span class="p">;</span>save</code></pre></div></p>
+
+<p>Note we use <code>--save</code> flag to make our changes saved in <code>bower.json</code>. We have three dependencies, requirejs the module loader, almond that we discussed in the previous article about requirejs, and Phaser the game framework.</p>
+
+<h2>gulp.js, The streaming build system</h2>
+
+<p>We have three types of tasks that gulp can help us for our project. Building the project, linting, and injecting code to our project, that is injecting our bower dependencies to our requirejs configuration file, and serving the project and watching for changes.</p>
+
+<p>We will use gulp plugins and other npm modules to help us, the first plugin we use is <code>gulp-load-plugins</code>, that automatically loads any gulp plugins we have in our <code>package.json</code>, that is convenient.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulp</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulp</span><span class="o">-</span><span class="nx">load</span><span class="o">-</span><span class="nx">plugins</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)();</span>
+<span class="kd">var</span> <span class="nx">rimraf</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">rimraf</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">runSequence</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">run</span><span class="o">-</span><span class="nx">sequence</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span></code></pre></div></p>
+
+<p>Note that we assign <code>gulp-load-plugins</code> to <code>$</code>, that is all the plugins are attached to. We also require two other npm modules, <code>rimraf</code> for removing files/folders, and <code>runSequence</code> for running gulp tasks in sync. Because gulp runs tasks asynchronously by default.</p>
+
+<h3>gulp; build the project!</h3>
+
+<p>First task is simple, <code>clean</code>, that will remove the build folder.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">clean</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">rimraf</span><span class="p">(</span><span class="nx">paths</span><span class="p">.</span><span class="nx">dist</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>This is how you define a gulp task. notice we pass <code>cb</code> as a parameter, that makes the gulp task asynchronous. It will be called once the task is done and tell gulp to continue with the other tasks. By default gulp will run all the tasks and wait for nothing.</p>
+
+<p>Next task is building the extra files in the <code>app</code> directory. In our case it&rsquo;s <code>index.html</code>, you might have extra <code>favicon.ico</code> or <code>robots.txt</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">extras</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;&amp;rsquo;)</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p><code>gulp.src</code> takes a glob and represents a file structure, which then can be piped to plugins. <code>gulp.dest</code> can be piped to and it will write files. In our case we take all the files in app folder, <code>app/*.*</code>, and write them into <code>public</code> folder.</p>
+
+<p>Next task is building the scripts. In our case this is moving the scripts into the <code>public</code> directory. We might have used minification, optimization and concatenation, we don&rsquo;t need it. We have an extra task that uses requirejs optimizer to optimize the script files and build a stand-alone code you can check out the <a href="https://github.com/eguneys/phaser-gulp-requirejs">source code</a> for this article.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">commonjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">mergeStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">merge</span><span class="o">-</span><span class="nx">stream</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">bowers</span> <span class="o">=</span> <span class="nx">gulp</span>
+      <span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">bower_components</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">lib</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">lib</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">common</span> <span class="o">=</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="k">return</span> <span class="nx">mergeStream</span><span class="p">([</span><span class="nx">bowers</span><span class="p">,</span> <span class="nx">common</span><span class="p">]);</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Note that, we use <code>merge-stream</code> that combines two gulp streams together, and we return the stream. Remember we passed an extra parameter, <code>cb</code> to gulp that made the task asynchronous, this is a second way of doing that, returning the stream also makes the task run asynchronous. The third way of making a task asynchronous is to return a promise. For more information about gulp API see <a href="https://github.com/gulpjs/gulp/blob/master/docs/API.md">docs</a>.</p>
+
+<p>Finally we have our <code>build</code> task, that will run the <code>clean</code>, <code>jshint-fail</code>, and <code>build-requirejs</code> tasks synchronously in that order.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">runSequence</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">clean</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">commonjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="k">default</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]);</span></code></pre></div></p>
+
+<p>Note that, we also have a special <code>default</code> task, that will run with only <code>gulp</code> command, opposed to <code>gulp build</code>.</p>
+
+<p>By default, tasks are run concurrently, as opposed to grunt which runs the tasks in series. To run a list of tasks in sync either tasks have to be asynchronous and have to depend on each other or you need to run tasks via <code>runSequence</code>.</p>
+
+<h3>gulp; lint, and inject some code!</h3>
+
+<p>Next task, is linting our code with <code>jshint</code>, there is a gulp plugin we access it using <code>$.jshint</code>, remember <code>gulp-load-plugins</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulpfile</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="err">/*.js&amp;rsquo;,</span>
+    <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="o">!</span><span class="nx">app</span><span class="o">/</span><span class="nx">bower_components</span><span class="o">/&lt;</span><span class="err">/strong&gt;&amp;rsquo;])</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">stylish</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+  <span class="p">});</span></code></pre></div></p>
+
+<p>Note that we pipe the jshint plugin and the jshint reporters to the gulp stream. Visit <a href="https://github.com/yeoman/bower-requirejs">here</a> for more information on jshint plugin.</p>
+
+<p>There is an npm module <a href="https://github.com/yeoman/bower-requirejs">bower-requirejs</a>, that wires up installed bower components into requirejs config, we also use it in our gulp task, though I won&rsquo;t show it here.</p>
+
+<h3>gulp; serve and watch files!</h3>
+
+<p>Next task, is serving our project to the browser, we use <a href="https://github.com/schickling/gulp-webserver">gulp-webserver</a> plugin for that. It will start a connect server and serve our files as well as watch them and run a live reload server and inject a live reload script so the browser will auto refresh when a file is changed.</p>
+
+<p>Final task is <code>watch</code> task, that will watch our source files for changes and run various tasks on change.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">watch</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">serve</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;],</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;, [&amp;lsquo;build-commonjs&amp;rsquo;]);&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;&amp;rsquo;, [&amp;lsquo;build-extras&amp;rsquo;]);&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">bower</span><span class="p">.</span><span class="nx">json</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">bower</span><span class="o">-</span><span class="nx">rjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulpfile</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">util</span><span class="p">.</span><span class="nx">colors</span><span class="p">.</span><span class="nx">red</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">-&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span>
+                                  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">nRestart</span> <span class="nx">the</span> <span class="nx">Gulp</span> <span class="nx">process</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span>
+                                  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">-&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+  <span class="p">});</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>You might wonder, <code>gulp-webserver</code> is also watching the folders, why we need gulp to watch again. Well gulp watches the source files, and runs tasks that compiles the source into the <code>public</code> folder, meanwhile <code>gulp-webserver</code> watches the <code>public</code> folder for changes, and refreshes the browser on change.</p>
+
+<p>Also note that &lsquo;watch&rsquo; task depends on &lsquo;serve&rsquo; task, we tell that by passing a dependency array as the second argument to <code>gulp.task</code>.</p>
+
+<p>Here are the list of dependencies we&rsquo;ve used in this article and the command to install and save them in the <code>package.json</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install <span class="p">&amp;</span>ndash<span class="p">;</span>save-dev gulp gulp-load-plugins gulp-changed gulp-imagemin gulp-livereload gulp-webserver gulp-util gulp-jshint jshint-stylish rimraf merge-stream run-sequence bower-requirejs requirejs</code></pre></div></p>
+
+<p>There are many gulp plug-ins listed in the <a href="http;//gulpjs.com/plugins">official website</a>. Yet gulp is sensitive about plugins, that there should be one, if it is only necessary, and they have a <a href="https://github.com/gulpjs/plugins/blob/master/src/blackList.json">blacklist of plugins</a> that should not be used, so pick your plugins carefully, and use bare npm modules wherever possible. Also checkout the <a href="https://github.com/gulpjs/gulp/blob/master/docs/README.md">documentation</a> and <a href="https://github.com/gulpjs/gulp/tree/master/docs/recipes">recipes</a> for achieving various tasks.</p>
+
+<h2>Conclusion</h2>
+
+<p>In this article we have built a project template for Phaser using gulp as our build tool, and requirejs as our module loader. We have learned how to define gulp tasks and how to make use of gulp plug-ins to enable us a nice development environment, with watching files and live-reloading our changes. Note that yet we used Phaser as a sample project, this will give you the main idea, and hopefully you will apply the same principles to your specific projects. You can find the full source code at <a href="https://github.com/eguneys/phaser-gulp-requirejs">github</a>.</p>
+
+<p>In the next article we will use this project template to build a yeoman generator, we will also show test driven development using mocha and yeoman test helpers.</p>
+]]></content>
+  </entry>
+  
+</feed>

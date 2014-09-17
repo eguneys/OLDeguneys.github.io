@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ember | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/ember/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-17T13:01:31+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Voting App: Front-end /w Ember]]></title>
+    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
+    <updated>2014-09-17T12:16:34+03:00</updated>
+    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p>In the <a href="/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/">previous article</a> we&rsquo;ve built a REST API for a voting application using sequelize. In this article we will consume this API and build the front end using emberjs. We also mentioned about, <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a>, a yeoman generator for fullstack applications using emberjs and express, that we used to scaffold our application.</p>
+
+<p>The voting application will be where users can vote for a poll and see the results of the poll. You can see a live example <a href="http://votefree.herokuapp.com">here</a>.</p>
+
+<h2>Scaffold Ember Application</h2>
+
+<p>In the previous article we used generator-emberfs for server side, we will continue using it for client side as well. It supports scaffolding, asset compilation, optimization for production, live reloading and test driven development. It uses <a href="http://gulpjs.com">gulp</a> for build system.</p>
+
+<p>You can launch the server and listen for changes using the command:</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">gulp devserver</code></pre></div></p>
+
+<p>Or you can build and optimize your application for production:</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">gulp build</code></pre></div></p>
+
+<h3>Directory Structure</h3>
+
+<p>This is our directory structure for client side. <code>vendor</code> folder contains third party libraries, <code>templates</code> folder contains handlebars templates, <code>styles</code> folder contains css styles in sass, <code>scripts</code> folder contains the emberjs application code.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">&lt;/p&gt;
+
+&lt;p&gt;app/client
+<span class="p">|&amp;</span>ndash<span class="p">;</span> scripts
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> app.js
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> common.js
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> components
+<span class="p">|</span>   <span class="p">|</span>   &lt;code&gt;-- progress-bar.js
+<span class="p">|</span>   <span class="p">|</span>-- controllers
+<span class="p">|</span>   <span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> index_controller.js
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> main.js
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> mixins
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> models
+<span class="p">|</span>   <span class="p">|</span>   &lt;code&gt;-- poll_model.js
+<span class="p">|</span>   <span class="p">|</span>-- router.js
+<span class="p">|</span>   <span class="p">|</span>-- routes
+<span class="p">|</span>   <span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> index_route.js
+<span class="p">|</span>   &lt;code&gt;-- views
+<span class="p">|</span>-- styles
+<span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> style.scss
+<span class="p">|&amp;</span>ndash<span class="p">;</span> templates
+<span class="p">|</span>   &lt;code&gt;-- components
+&lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> vendor&lt;/p&gt;
+
+&lt;p&gt;</code></pre></div></p>
+
+<p>Note that this folder structure is boilerplate for the generator-emberfs. It uses requirejs with AMD modules. But, yet we won&rsquo;t get into details of requirejs in this article, rather stick to essential codes for emberjs.</p>
+
+<h2>Routes in Ember</h2>
+
+<p>We won&rsquo;t define any particular route for this simple application. Rather we will use the default <code>IndexRoute</code> Ember provides.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">Router</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">App</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">reopen</span><span class="p">({</span>
+  <span class="nx">location</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">history</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Our <code>IndexRoute</code> will have the poll #1 as its model. Remember we have provided a seed model as the poll #1 in sequelize, in the previous article.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">IndexRoute</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">model</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// GET api/v1/polls/1</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">poll</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p><code>this.store</code> uses ember-data to pull the models. It uses an adapter, which is in our case a <code>DS.RESTAdapter</code>. So this code will make a request to <code>api/v1/polls/1</code> to build a model. Later we can use the model in our controller and templates.</p>
+
+<h3>Templates in Handlebars</h3>
+
+<p>Let&rsquo;s drop a skeleton template using bootstrap for style and handlebars for bindings. I will use emblem formatting just for efficient view.</p>
+
+<p><code>File: templates/index.hbs</code></p>
+
+<p><div><script src='https://gist.github.com/b46c4bce03a532b48397.js'></script>
+<noscript><pre><code>.container
+  .row
+    .col-md-12
+      h3 Sample Vote Application
+      .lead
+        {{question}}?
+
+      div class=&quot;poll-choices {{resultsHidden::hidden}}&quot;
+        each choices
+          .row
+            .col-md-6
+              button.btn.btn-info.pull-right click=&quot;vote id&quot;
+                h4: {{text}}
+            .col-md-6
+              p: {{description}}
+          .row
+            .col-md-12.text-center
+              button.btn.btn-link click=&quot;showResults&quot;: Show results
+              i.fa.fa-arrow-right
+
+      div class=&quot;poll-results {{resultsHidden:hidden}}&quot;
+        .row
+          .col-md-8.col-md-offset-2.text-center
+            each pollChoices
+              .progress
+                progress-bar text=text percent=vote-percent
+        .row
+          .col-md-12.text-center
+            h4: Total Voted: {{totalVotes}}
+</code></pre></noscript></div>
+</p>
+
+<p>Here, we have a <code></code> binding, main header for the poll. and one <code>div </code> binding for showing the poll choices and allowing vote. and a <code>div </code> binding for showing the poll results.</p>
+
+<p>In the poll results we use a, <code>progress-bar text=text percent=vote-percent</code>, ember component to display the results, which we will mention later.</p>
+
+<p>Finally we have various actions for communicating with the model <code>click="showResults"</code>, and <code>click="vote id"</code>. These actions are handled in ember controller and will be discussed later.</p>
+
+<h2>Models in Ember Data</h2>
+
+<p>Just as we defined data models for sequelize, we will define the same models for emberjs using ember-data. We will use ember-data <code>DS.RESTAdapter</code> for communicating with the REST API.</p>
+
+<p>In the previous article We mentioned about our three models <code>Poll</code>, <code>Choice</code>, and <code>Vote</code> and the relationships between them. Here we define the same relationships using ember-data.</p>
+
+<p><code>File: models/poll_model.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">App</span><span class="p">.</span><span class="nx">Poll</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">string</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+    <span class="nx">choices</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">choice</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">App</span><span class="p">.</span><span class="nx">Choice</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">text</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">string</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+    <span class="nx">description</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">string</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+    <span class="nx">count</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">number</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+    <span class="nx">votes</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">vote</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span>
+    <span class="nx">poll</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">poll</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">App</span><span class="p">.</span><span class="nx">Vote</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">choice</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">choice</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+  <span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Note that ember uses <code>DS.attr</code> for defining attributes, and <code>DS.hasMany</code>, <code>DS.belongsTo</code> methods for defining relationships.</p>
+
+<p>If you visit <a href="http://votefree.herokuapp.com/api/v1/polls/1">/api/v1/polls/1</a> in your local server, you will see the json response for the poll #1:</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span><span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">poll</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="p">{</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">id</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">question</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">What</span> <span class="nx">features</span> <span class="nx">would</span> <span class="nx">you</span> <span class="nx">like</span> <span class="nx">to</span> <span class="nx">see</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="p">[{</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">id</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">text</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Improved</span> <span class="nx">UI</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">description</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">New</span><span class="p">,</span> <span class="nx">fancy</span> <span class="kr">interface</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">PollId</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">count</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">0</span><span class="p">},{</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">id</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">2</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">text</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Improved</span> <span class="nx">Performance</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">description</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Faster</span> <span class="nx">response</span> <span class="nx">times</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">PollId</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">count</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span><span class="mi">0</span>
+    <span class="p">}]</span>
+<span class="p">}}</span></code></pre></div></p>
+
+<p>Notice <code>choices</code> attribute is embedded within the <code>poll</code> model. Normally ember-data expects this to be side loaded. So we will have to use <code>DS.EmbeddedRecordsMixin</code> to enable ember-data to parse our embedded response.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">PollSerializer</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">RESTSerializer</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">DS</span><span class="p">.</span><span class="nx">EmbeddedRecordsMixin</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">attrs</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">choices</span><span class="o">:</span> <span class="p">{</span> <span class="nx">embedded</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">always</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div></p>
+
+<h2>Controllers in Ember</h2>
+
+<p>We will extend the default <code>IndexController</code> in our application. In ember, controllers communicate between the template and the model the extra properties defined in controller will be also available to the template. So ember controllers is in a way model decorators.</p>
+
+<h3>Controller Computed Properties (Model Decorators)</h3>
+
+<p><code>IndexController</code> extends <code>Ember.ObjectController</code> and decorates the <code>poll</code> model. We have various computed properties that will be available to our template, and they will be live bounded to our model.</p>
+
+<p><code>File scripts/controllers/index_controller.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">App</span><span class="p">.</span><span class="nx">IndexController</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">ObjectController</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">resultsHidden</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">pollChoices</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">model</span><span class="p">.</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">totalVotes</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;totalVotes&#39;</span><span class="p">);</span>
+
+<span class="nx">choices</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">votePercent</span> <span class="o">=</span> <span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="nx">totalVotes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">;</span>
+  <span class="nx">item</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;vote-percent&#39;</span><span class="p">,</span> <span class="nx">votePercent</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+  <span class="k">return</span> <span class="nx">item</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="k">return</span> <span class="nx">choices</span><span class="p">;</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">model</span><span class="p">.</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">totalVotes</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">model</span><span class="p">.</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">totalVotes</span> <span class="o">=</span> <span class="nx">choices</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">prev</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">prev</span> <span class="o">+</span> <span class="nx">item</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">);</span>
+<span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+
+<span class="k">return</span> <span class="nx">totalVotes</span><span class="p">;</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">model</span><span class="p">.</span><span class="nx">choices</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="c1">// &amp;hellip;</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p><code>resultsHidden</code> property toggles between poll results and voting. <code>pollChoices</code> computed property computes the total percentage of votes for each choice. <code>totalVotes</code> computed property computes the total number of votes for a poll. Note that <code>.property('model.choices')</code> function that is appended to computed property methods. That binds the <code>model.choices</code> to our computed property so whenever a change occurs computed property updates live.</p>
+
+<h3>Controller Actions</h3>
+
+<p>Controller also communicates between template and model by means of actions. Remember we had three actions in our template, we handle those actions inside our controller.</p>
+
+<p><code>File: scripts/controllers/index_controller.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">actions</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">showResults</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">model</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;).</span><span class="nx">reload</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">resultsHidden</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kc">false</span><span class="p">);</span>
+      <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">},</span>
+    <span class="nx">hideResults</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">resultsHidden</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kc">true</span><span class="p">);</span>
+    <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">vote</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choiceId</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">vote</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">createRecord</span><span class="p">(</span><span class="s1">&#39;vote&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">choice</span><span class="o">:</span> <span class="nx">choices</span><span class="p">.</span><span class="nx">findBy</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">choiceId</span><span class="p">)</span>
+  <span class="p">});</span>
+
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+  <span class="nx">vote</span><span class="p">.</span><span class="nx">save</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">self</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s1">&#39;showResults&#39;</span><span class="p">);</span>
+  <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">self</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s1">&#39;showResults&#39;</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p><code>showResults</code> action toggles the <code>resultsHidden</code> property to false so the results are shown. Note that before showing the results, it reloads the model so we get the latest results. <code>hideResults</code> is the opposite, it goes back to the voting view. <code>vote</code> action is where the user votes. It takes a <code>choiceId</code> parameter that is the poll choice. We create a new <code>vote</code> record and save it.</p>
+
+<h2>Progress Bar Ember Component</h2>
+
+<p>Now let&rsquo;s see how we define an ember component. In our case a progress bar for displaying the percentage of votes for a poll choice.</p>
+
+<p>First we define a template for our ember component.</p>
+
+<p><code>File: templates/components/progress-bar.hbs</code></p>
+
+<p><div><script src='https://gist.github.com/248e17bdd390dbf5ec83.js'></script>
+<noscript><pre><code>&lt;div {{bind-attr class=&quot;:progress-bar progress-bar-type&quot;}} {{bind-attr style=percent-style}}&gt;
+  &lt;span&gt;{{text}} {{percent}}%&lt;/span&gt;
+&lt;/div&gt;</code></pre></noscript></div>
+</p>
+
+<p>Next we define the code for our ember component.</p>
+
+<p><code>File: scripts/components/progress-bar.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">App</span><span class="p">.</span><span class="nx">ProgressBarComponent</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">progress</span><span class="o">-</span><span class="nx">bar</span><span class="o">-</span><span class="nx">type</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">barTypes</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">progress</span><span class="o">-</span><span class="nx">bar</span><span class="o">-</span><span class="nx">danger</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">progress</span><span class="o">-</span><span class="nx">bar</span><span class="o">-</span><span class="nx">warning</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">progress</span><span class="o">-</span><span class="nx">bar</span><span class="o">-</span><span class="nx">info</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">progress</span><span class="o">-</span><span class="nx">bar</span><span class="o">-</span><span class="nx">success</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+    <span class="p">];</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">percent</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;percent&#39;</span><span class="p">),</span> <span class="mi">100</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">barType</span> <span class="o">=</span> <span class="nx">barTypes</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">percent</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">25</span><span class="p">)];</span>
+
+<span class="k">return</span> <span class="nx">barType</span><span class="p">;</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">percent</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">percent</span><span class="o">-</span><span class="nx">style</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">width</span><span class="o">:&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">percent</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span> <span class="o">+</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="o">%&amp;</span><span class="nx">rsquo</span><span class="p">;;</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">percent</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>Here, we calculate <code>progress-bar-type</code> based on percentage, that will apply the bootstrap classes to the div and make the progress bar change colors with the percentage.</p>
+
+<h2>Setup the Ember Application</h2>
+
+<p>Finally we start our ember application and extend our ember application adapter.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">App</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Application</span><span class="p">.</span><span class="nx">create</span><span class="p">();</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">App</span><span class="p">.</span><span class="nx">ApplicationAdapter</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">RESTAdapter</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">namespace</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">api</span><span class="o">/</span><span class="nx">v1</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Note that extend the <code>DS.RESTAdapter</code> and we provide a <code>namespace</code> option to tell it that our REST API resides at <code>api/v1</code> namespace.</p>
+
+<h2>Development and Production</h2>
+
+<p>You can use <code>gulp test</code> to run your client side tests. generator-emberfs uses coffeescript for test code. You can use ember-qunit for unit testing and ember test-helpers for integration tests. It uses testem as the test runner. But, yet since we are using a server side REST API, You have to provide an <a href="https://github.com/airportyh/testem#api-proxy">API Proxy</a> configuration to testem to redirect your API calls to your server, and launch your server before running the tests.</p>
+
+<p>At this point we have finished the application and it&rsquo;s ready to ship. But first you need to build it using the command <code>gulp build</code>. This will compile all your assets, minify and optimize and concatenate your script and css files into the <code>public</code> directory. Now you can launch your server using the command: <code>node config/app</code>.</p>
+
+<h2>Conclusion</h2>
+
+<p>In this article we have built a front end for a REST API where users can vote for a poll and see the results of the poll using emberjs. We&rsquo;ve built a template in handlebars, setup the models in ember-data, extended an ember controller and an ember component for displaying progress bars.</p>
+
+<p>The full repository is at <a href="https://www.github.com/eguneys/voting_app">github</a>. A live example is available <a href="http://votefree.herokuapp.com">here</a></p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Phaser | Fullstack Development w/ Javascript]]></title>
+  <link href="http://eguneys.github.io/blog/categories/phaser/atom.xml" rel="self"/>
+  <link href="http://eguneys.github.io/"/>
+  <updated>2014-09-17T13:01:31+03:00</updated>
+  <id>http://eguneys.github.io/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Let's Build a Yeoman Generator 2]]></title>
+    <link href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-2/"/>
+    <updated>2014-09-17T12:14:58+03:00</updated>
+    <id>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-2</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p>In the previous <a href="/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/">article</a> we built a Phaser project template, that used gulp as a build tool. In this article we will build a yeoman generator, for scaffolding, generating boilerplate from that template. We will also use mocha to write tests and see how to do test driven development. Finally we will publish it to npm.</p>
+
+<h2>Initialize Yeoman Generator</h2>
+
+<p>A yeoman generator is an npm package, that runs on node environment. As we write our generator we will test it with mocha.</p>
+
+<p>First install mocha with npm:</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm insall -g mocha</code></pre></div></p>
+
+<p>Next we initialize npm, and create our <code>package.json</code> file.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm init</code></pre></div></p>
+
+<p>Next, we install our dependencies:
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install <span class="p">&amp;</span>ndash<span class="p">;</span>save yeoman-generator yosay chalk chai fs-extra gulp mocha</code></pre></div></p>
+
+<p>We also need <code>yo</code> as a <em>peerDependency</em>, you can see the example <a href="https://github.com/eguneys/generator-phaserjs/blob/master/package.json"><code>package.json</code></a> as a reference, or just use it as is.</p>
+
+<p>Next I&rsquo;ve configured some utility modules, that are going to make our life easier, grab them as we will later use them. <a href="https://github.com/eguneys/generator-phaserjs/blob/master/util.js"><code>util.js</code></a>, and <a href="https://github.com/eguneys/generator-phaserjs/blob/master/test-util.js"><code>test-util.js</code></a>, place them in the root directory, next to <code>package.json</code>.</p>
+
+<h3>Directory Structure</h3>
+
+<p>Here&rsquo;s the standard directory structure for yeoman generators.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|&amp;</span>ndash<span class="p">;</span> LICENSE
+<span class="p">|&amp;</span>ndash<span class="p">;</span> README.md
+<span class="p">|&amp;</span>ndash<span class="p">;</span> generators
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> app
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> templates
+<span class="p">|</span>   <span class="p">|</span>   &lt;code&gt;-- index.js
+<span class="p">|</span>   <span class="p">|</span>-- prefab
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- templates
+<span class="p">|</span>   <span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> index.js
+<span class="p">|</span>   &lt;code&gt;-- state
+<span class="p">|</span>       <span class="p">|</span>-- templates
+<span class="p">|</span>      &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> index.js
+<span class="p">|&amp;</span>ndash<span class="p">;</span> package.json
+<span class="p">|&amp;</span>ndash<span class="p">;</span> <span class="nb">test</span>
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> fixtures
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> app.js
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> bower.json
+<span class="p">|</span>   <span class="p">|</span>   &lt;code&gt;-- package.json
+<span class="p">|</span>   <span class="p">|</span>-- <span class="nb">test</span>-creation.js
+<span class="p">|</span>   <span class="p">|</span>-- <span class="nb">test</span>-load.js
+<span class="p">|</span>   <span class="p">|</span>-- test_prefab.js
+<span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> test_state.js
+<span class="p">|&amp;</span>ndash<span class="p">;</span> <span class="nb">test</span>-util.js
+<span class="sb">`</span><span class="p">&amp;</span>ndash<span class="p">;</span> util.js</code></pre></div></p>
+
+<p>As you can see, besides <code>LICENSE</code>, <code>README.md</code>, <code>package.json</code> and utility files, we have two folders <code>generators</code> and <code>test</code>.</p>
+
+<p><code>generators</code> folder holds each sub-generator. Each folder is the same name as the sub-generator name. In our case we have a default generator <code>app</code>, that is called with command <code>yo name</code>, and two extra sub-generators <code>prefab</code> and <code>state</code>. Each sub-generator has an <code>index.js</code> file, that contains the entry point, and a <code>templates</code> folder that contains the template files for the boilerplate. Template files will use <code>underscore</code> templating library.</p>
+
+<p><code>test</code> folder holds the tests for the yeoman generator. <code>test/fixtures</code> folder holds fixture files that we need for some tests.</p>
+
+<p>For now, create two folders <code>generators</code> and <code>test</code>, next we will write tests, and later write code to pass them.</p>
+
+<h2>Write Failing Test, Code, Pass Test</h2>
+
+<p>That&rsquo;s how we develop our generator, using test driven development. Before we start, I want to tell you that we will write our tests in coffeescript. I never liked coffescript, until I found out the perfect opportunity to learn it, that is because it is more convenient for nested test code, you won&rsquo;t have to deal with nested brackets. Now let&rsquo;s write our first test.</p>
+
+<h3>Default Generator <code>app</code></h3>
+
+<p>Default generator used when you call <code>yo name</code>. It is the <code>app</code> generator, and it resides in the <code>app</code> folder.</p>
+
+<p><code>File: test/test-load.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nv">assert = </span><span class="nx">require</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">assert</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">describe</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">phaserjs</span> <span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+  <span class="nx">it</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">can</span> <span class="nx">be</span> <span class="nx">imported</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+    <span class="nv">app = </span><span class="nx">require</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="nx">generators</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+    <span class="nx">assert</span> <span class="nx">app</span> <span class="o">!=</span> <span class="kc">undefined</span></code></pre></div></p>
+
+<p>Here we use BDD interface that mocha provides, that is, <code>describe</code>, and <code>it</code> keywords. Mocha allows you to use any assertion library, we use <code>assert</code> module. <code>describe</code> defines a test suite, <code>it</code> defines a test case.</p>
+
+<p>In our case we have a <code>phaserjs generator</code> test suite with a test that says <code>it can be imported</code>. In the test, we simply require our first generator, that is the main generator <code>../generators/app</code>, and assert that it is defined.</p>
+
+<p>Now when you go to the root directory and run your tests with command <code>mocha</code>, it will fail, because we don&rsquo;t have an <code>app generator</code> yet, so let&rsquo;s code our first generator.</p>
+
+<h3>Extending generator</h3>
+
+<p>Yeoman offers two base generators <code>Base</code> and <code>NamedBase</code> that we can extend from. For the default <code>app</code> generator we will extend <code>Base</code> generator.</p>
+
+<p><code>File: generators/app/index.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">path</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">chalk</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">chalk</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// Two utility modules that I provided before</span>
+<span class="kd">var</span> <span class="nx">util</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">util</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">genUtils</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="p">..</span><span class="o">/</span><span class="nx">util</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="c1">// modules yeoman provides</span>
+<span class="kd">var</span> <span class="nx">yeoman</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">yeoman</span><span class="o">-</span><span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">yosay</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">yosay</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">PhaserGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">Base</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PhaserGenerator</span><span class="p">;</span></code></pre></div></p>
+
+<p>Here we extended the <code>Base</code> generator, and exported it as a module. Now the tests will pass.</p>
+
+<p>But the generator doesn&rsquo;t do anything yet, now let&rsquo;s write some tests that asserts that our default generator actually creates some boilerplate.</p>
+
+<p><code>File: test/test-creation.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nv">path = </span><span class="nx">require</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">path</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+<span class="nv">fs = </span><span class="nx">require</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">fs</span><span class="o">-</span><span class="nx">extra</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+<span class="nv">exec = </span><span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">child_process</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;).</span><span class="nx">exec</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nv">helpers = </span><span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">yeoman</span><span class="o">-</span><span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;).</span><span class="nx">test</span>
+<span class="nv">expect = </span><span class="nx">require</span> <span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">chai</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;).</span><span class="nx">expect</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">describe</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">phaserjs</span> <span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">beforeEach</span> <span class="nf">(done) -&gt;</span>
+    <span class="vi">@app = </span><span class="nx">helpers</span>
+      <span class="p">.</span><span class="nx">run</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">dirname</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="nx">generators</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+      <span class="p">.</span><span class="nx">inDir</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="o">&lt;/</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">dirname</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;.</span><span class="nx">tmp</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;),</span> <span class="nf">(dir) -&gt;</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span>    <span class="nx">fs</span><span class="p">.</span><span class="nx">symlinkSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;fixtures/node_modules&#39;</span><span class="p">),</span>
+        <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;node_modules&#39;</span><span class="p">),</span> <span class="s">&#39;dir&#39;</span>
+
+    <span class="nx">fs</span><span class="p">.</span><span class="nx">mkdirpSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;app/&#39;</span><span class="p">)</span>
+
+    <span class="o">//</span> <span class="nx">bower_components</span>
+    <span class="nx">fs</span><span class="p">.</span><span class="nx">symlinkSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;fixtures/bower_components&#39;</span><span class="p">),</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;app/bower_components&#39;</span><span class="p">),</span> <span class="s">&#39;dir&#39;</span>
+
+    <span class="nx">done</span><span class="p">()</span>
+<span class="o">&lt;/</span><span class="nx">code</span><span class="o">&gt;&lt;/</span><span class="nx">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">describe</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">running</span> <span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+    <span class="nx">describe</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">with</span> <span class="nx">default</span> <span class="nx">options</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+      <span class="nx">it</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">should</span> <span class="nx">pass</span> <span class="nx">jshint</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">(done) -&gt;</span>
+        <span class="nx">@app</span><span class="p">.</span><span class="nx">withPrompt</span><span class="p">({})</span>
+            <span class="p">.</span><span class="nx">on</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">end</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+              <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">running</span> <span class="nx">jshint</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+              <span class="nx">exec</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulp</span> <span class="nx">jshint</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">(error, stdout, stderr) -&gt;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+                  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nb">Error</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span> <span class="nx">error</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span>            <span class="nx">expect</span><span class="p">(</span><span class="nx">stdout</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">contain</span> <span class="s">&#39;Finished \&#39;jshint\&#39;&#39;</span>
+            <span class="nx">expect</span><span class="p">(</span><span class="nx">stdout</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="o">not</span><span class="p">.</span><span class="nx">contain</span> <span class="s">&#39;problems&#39;</span>
+            <span class="nx">done</span><span class="p">();</span>
+<span class="o">&lt;/</span><span class="nx">code</span><span class="o">&gt;&lt;/</span><span class="nx">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>First, we require <code>helpers</code> module, that yeoman provides as test helpers, and <code>chai</code> assertion library. Then we have a <code>beforeEach</code> block that runs before every test within the test suite. Before every test we have to run the generator, and then run our tests against the end results.</p>
+
+<p>The way we run the generator is simple, thanks to <code>helpers</code> module. we provide our generator path to the <code>helpers.run</code> method. This will return a <code>RunContext</code> on which you can later setup directory, mock prompt, options etc.</p>
+
+<p>After running our generator with <code>helpers.run</code> method, we use <code>inDir</code> method to setup the directory to run the generator from. We pass it a <code>.tmp</code> directory. The second parameter is a callback we use to setup the <code>.tmp</code> directory. In our case we symlink <code>node_modules</code> and <code>bower_components</code> we had in our <code>test/fixtures</code> folder beforehand, so we don&rsquo;t have to run <code>npm install</code> for our test scenario each time we test our generator.</p>
+
+<p>The test will run <code>gulp jshint</code> and expect that it will finish with no problems.</p>
+
+<p>To pass the test we need to generate the boilerplate Phaser project. Let&rsquo;s see how we do that next.</p>
+
+<p><code>File: generators/app/index.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">PhaserGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">Base</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">info</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">yeoman</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chalk</span><span class="p">.</span><span class="nx">yellow</span><span class="p">(</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">Out</span> <span class="nx">of</span> <span class="nx">the</span> <span class="nx">box</span> <span class="nx">I</span> <span class="nx">create</span> <span class="nx">a</span> <span class="nx">Phaser</span> <span class="nx">app</span> <span class="kd">with</span> <span class="nx">RequireJS</span><span class="p">,</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span>
+      <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">and</span> <span class="nx">gulp</span> <span class="nx">to</span> <span class="nx">build</span> <span class="nx">your</span> <span class="nx">app</span><span class="p">.</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span>
+    <span class="p">));</span>
+  <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">generateBasic</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;gitignore&#39;</span><span class="p">,</span> <span class="s1">&#39;.gitignore&#39;</span><span class="p">);</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;jshintrc&#39;</span><span class="p">,</span> <span class="s1">&#39;.jshintrc&#39;</span><span class="p">);</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;bowerrc&#39;</span><span class="p">,</span> <span class="s1">&#39;.bowerrc&#39;</span><span class="p">);</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;_package.json&#39;</span><span class="p">,</span> <span class="s1">&#39;package.json&#39;</span><span class="p">);</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;_bower.json&#39;</span><span class="p">,</span> <span class="s1">&#39;bower.json&#39;</span><span class="p">);</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;_gulpfile.js&#39;</span><span class="p">,</span> <span class="s1">&#39;gulpfile.js&#39;</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">generateClient</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">sourceRoot</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">templates</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">genUtils</span><span class="p">.</span><span class="nx">processDirectory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;app&#39;</span><span class="p">,</span> <span class="s1">&#39;app&#39;</span><span class="p">);</span>
+<span class="nx">genUtils</span><span class="p">.</span><span class="nx">processDirectory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">end</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">installDependencies</span><span class="p">({</span>
+      <span class="nx">skipInstall</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">skip</span><span class="o">-</span><span class="nx">install</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Every method we added is called in sequence. First in the <code>info</code> method we display some ASCII art and info about our generator. Next in the <code>generateBasic</code> and <code>generateClient</code> methods we setup the boilerplate. And finally in the <code>end</code> method we run <code>installDependencies</code> method that runs <code>bower install &amp;&amp; npm install</code> for us.</p>
+
+<p>Note that there are three helper methods for copying files to setup the boilerplate. <code>this.copy</code> will simply copy the file from <code>generators/app/templates</code> folder to the users project folder, <code>this.template</code> will run the template engine, underscore, and copy the file. Finally we use <code>genUtils.processDirectory</code> that I added as a helper method that copies whole directories.</p>
+
+<p>After coding our generator, we actually need template files to copy. They live in the <code>generators/app/templates</code> folder. Let&rsquo;s take a look at <code>_package.json</code> template and how we use underscore to customize the boilerplate files.</p>
+
+<p><code>File: generators/app/templates/_package.json</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">name</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">lt</span><span class="p">;</span><span class="o">%=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">slugify</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="o">%&gt;&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">version</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="mf">0.0</span><span class="p">.</span><span class="mi">0</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">description</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Phaser</span> <span class="nx">template</span> <span class="kd">with</span> <span class="nx">requirejs</span> <span class="nx">and</span> <span class="nx">gulp</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="c1">// &amp;hellip; rest is omitted</span>
+<span class="p">}</span></code></pre></div></p>
+
+<p>Here we use underscore templating, and helpers function to customize the name of the package. <code>name</code> variable is the name of the users project.</p>
+
+<p>If you run the tests again, hopefully it will pass this time.</p>
+
+<h3>Sub Generator <code>state</code></h3>
+
+<p>Sub generator <code>state</code> used when you call <code>yo name:state</code>. It is the <code>state</code> generator, and it resides in the <code>state</code> folder.</p>
+
+<p><code>File: test/test_prefab.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nx">describe</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">phaserjs</span><span class="o">:</span><span class="nx">prefab</span> <span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+  <span class="nv">defaultArgs = </span><span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">TestPrefab</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">beforeEach</span> <span class="nf">-&gt;</span>
+    <span class="vi">@app_prefab = </span><span class="nx">helpers</span>
+      <span class="p">.</span><span class="nx">run</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">dirname</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;..</span><span class="o">/</span><span class="nx">generators</span><span class="o">/</span><span class="nx">prefab</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span>
+      <span class="p">.</span><span class="nx">inDir</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="o">&lt;/</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">dirname</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;.</span><span class="nx">tmp</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">describe</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">with</span> <span class="nx">default</span> <span class="nx">options</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="nf">-&gt;</span>
+    <span class="nx">it</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">should</span> <span class="nx">generate</span> <span class="nx">expected</span> <span class="nx">files</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">(done) -&gt;</span>
+      <span class="nx">@app_prefab</span>
+        <span class="p">.</span><span class="nx">withArguments</span> <span class="p">{}</span>
+        <span class="p">.</span><span class="nx">on</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">end</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nf">-&gt;</span>
+          <span class="nx">assert</span><span class="p">.</span><span class="nx">file</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="o">/</span><span class="nx">testprefab</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]</span><span class="o">&lt;/</span><span class="nx">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span>      <span class="nx">assert</span><span class="p">.</span><span class="nx">fileContent</span> <span class="s">&#39;app/scripts/prefabs/testprefab.js&#39;</span><span class="p">,</span> <span class="o">/</span> <span class="nx">function</span> <span class="nx">Testprefab</span><span class="err">\</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="err">\</span><span class="p">)</span> <span class="err">\</span><span class="p">{</span><span class="err">\</span><span class="nx">n</span><span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span><span class="o">+</span><span class="nx">Phaser</span><span class="err">\</span><span class="p">.</span><span class="nx">Sprite</span><span class="err">\</span><span class="p">.</span><span class="nx">call</span><span class="err">\</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">game</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="err">\</span><span class="s">&#39;atlasname\&#39;, 0/</span>
+
+<span class="s">      assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="o">/</span><span class="nx">testprefab</span><span class="p">.</span><span class="nx">js</span><span class="s">&#39;, /Testprefab\.prototype = Object\.create\(Phaser\.Sprite\.prototype\)\;\n/</span>
+
+<span class="s">      assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="o">/</span><span class="nx">testprefab</span><span class="p">.</span><span class="nx">js</span><span class="s">&#39;, /Testprefab\.prototype.constructor = Testprefab;\n/</span>
+
+<span class="s">      done()</span>
+<span class="s">&lt;/code&gt;&lt;/pre&gt;</span>
+
+<span class="s">&lt;p&gt;  describe &amp;lsquo;with &amp;ndash;group option&amp;rsquo;, -&gt;</span>
+<span class="s">    it &amp;lsquo;should generate expected files&amp;rsquo;, (done) -&gt;</span>
+<span class="s">      @app_prefab.withOptions {&amp;lsquo;group&amp;rsquo;:true}</span>
+<span class="s">                 .on &amp;lsquo;end&amp;rsquo;, -&gt;&lt;/p&gt;</span>
+
+<span class="s">&lt;pre&gt;&lt;code&gt;               assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="sr">/testprefab.js&#39;, /</span> <span class="nx">function</span> <span class="nx">Testprefab</span><span class="err">\</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">parent</span><span class="err">\</span><span class="p">)</span> <span class="err">\</span><span class="p">{</span><span class="err">\</span><span class="nx">n</span><span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span><span class="o">+</span><span class="nx">Phaser</span><span class="err">\</span><span class="p">.</span><span class="nx">Group</span><span class="err">\</span><span class="p">.</span><span class="nx">call</span><span class="err">\</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">game</span><span class="p">,</span> <span class="nx">parent</span><span class="err">\</span><span class="p">)</span><span class="err">\</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">/</span>
+
+               <span class="nx">assert</span><span class="p">.</span><span class="nx">fileContent</span> <span class="s">&#39;app/scripts/prefabs/testprefab.js&#39;</span><span class="p">,</span> <span class="sr">/Testprefab\.prototype.constructor = Testprefab;\n/</span>
+
+               <span class="nx">done</span><span class="p">();</span>
+<span class="o">&lt;/</span><span class="nx">code</span><span class="o">&gt;&lt;/</span><span class="nx">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span></code></pre></div></p>
+
+<p>In this test suite, we have two tests, one uses the default options, second runs the generator with <code>--group</code> option. In each case we use <code>assert.fileContent</code> test helper to match a regex against the generated file.</p>
+
+<p>To pass the test let&rsquo;s code our sub generator.</p>
+
+<p><code>File: generators/prefab/index.js</code></p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">PhaserJsStateGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">NamedBase</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">group</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">{</span>
+      <span class="nx">desc</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">extend</span> <span class="nx">Phaser</span><span class="p">.</span><span class="nx">Group</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+      <span class="nx">type</span><span class="o">:</span> <span class="nb">Boolean</span><span class="p">,</span>
+      <span class="nx">defaults</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">});</span>
+  <span class="p">},</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">generate</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">slugName</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">slugify</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">),</span>
+        <span class="nx">templateFile</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">prefab</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">])</span> <span class="p">{</span>
+  <span class="nx">templateFile</span> <span class="o">=</span> <span class="s1">&#39;prefab_group.js&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="nx">templateFile</span><span class="p">,</span> <span class="s1">&#39;app/scripts/prefabs/&#39;</span> <span class="o">+</span> <span class="nx">slugName</span> <span class="o">+</span> <span class="s1">&#39;.js&#39;</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Here we define an extra option <code>group</code> that can be passed to our sub generator. It defaults to false, you can enable it by calling the sub generator with group option <code>$ yo name:prefab --group</code>. In our case we use the option to decide which template we copy as boilerplate.</p>
+
+<h2>Manually Test Your Generator</h2>
+
+<p>Now your generator is passing all the tests, yet you want to see it in action. Since you&rsquo;re developing the generator locally, and haven&rsquo;t published it yet, you have to symlink your local module as a global module, using npm.</p>
+
+<p>Run this command in your generators root directory.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm link</code></pre></div></p>
+
+<p>Now you can call <code>yo generator-name</code> and test your generator if it works.</p>
+
+<h2>Publish Your Generator</h2>
+
+<p>Finally you can publish your generator. First create an account on <a href="http://npmjs.org">npm</a>. Next set your npm author info.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm <span class="nb">set </span>init.author.name <span class="p">&amp;</span>ldquo<span class="p">;</span>Your Name<span class="p">&amp;</span>rdquo<span class="p">;</span>
+<span class="nv">$ </span>npm <span class="nb">set </span>init.author.email <span class="p">&amp;</span>ldquo<span class="p">;</span>Your Email<span class="p">&amp;</span>rdquo<span class="p">;</span>
+<span class="nv">$ </span>npm <span class="nb">set </span>init.author.url <span class="p">&amp;</span>ldquo<span class="p">;</span>Your Website<span class="p">&amp;</span>rdquo<span class="p">;</span>&lt;/p&gt;
+
+&lt;p&gt;<span class="nv">$ </span>npm adduser</code></pre></div></p>
+
+<p>Then publish with.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm publish</code></pre></div></p>
+
+<h3>A note about the package.json format</h3>
+
+<p>There is a list of yeoman generators in the <a href="http://yeoman.io/generators/">official yeoman website</a>. It is automatically pulled from the npm API. To list your generator there you need to add <code>yeoman-generator</code> keyword to your <code>package.json</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">name</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">generator</span><span class="o">-</span><span class="nx">phaserjs</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">version</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="mf">0.1</span><span class="p">.</span><span class="mi">0</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">description</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Yeoman</span> <span class="nx">generator</span> <span class="k">for</span> <span class="nx">Phaser</span> <span class="kd">with</span> <span class="nx">RequireJS</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">repository</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">eguneys</span><span class="o">/</span><span class="nx">generator</span><span class="o">-</span><span class="nx">phaserjs</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">author</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">name</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">Emre</span> <span class="nx">Guneyler</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">email</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="o">&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;&amp;#x6d;&amp;#97;&amp;#105;&amp;#x6c;&amp;#x74;&amp;#x6f;&amp;#x3a;&amp;#x65;&amp;#x67;&amp;#117;&amp;#110;&amp;#101;&amp;#x79;&amp;#x73;&amp;#x40;&amp;#x68;&amp;#111;&amp;#x74;&amp;#109;&amp;#x61;&amp;#x69;&amp;#x6c;&amp;#x2e;&amp;#99;&amp;#111;&amp;#x6d;&quot;</span><span class="o">&gt;&amp;</span><span class="err">#</span><span class="nx">x65</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x67</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x75</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x6e</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">101</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">121</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x73</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">64</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x68</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x6f</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">116</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">109</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">97</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x69</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x6c</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">46</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="nx">x63</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">111</span><span class="p">;</span><span class="o">&amp;</span><span class="err">#</span><span class="mi">109</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/a&gt;&amp;rdquo;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">url</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="o">&lt;</span><span class="nx">a</span> <span class="nx">href</span><span class="o">=</span><span class="s2">&quot;https://github.com/eguneys&quot;</span><span class="o">&gt;</span><span class="nx">https</span><span class="o">:</span><span class="c1">//github.com/eguneys&lt;/a&gt;&amp;rdquo;</span>
+  <span class="p">},</span>
+  <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">keywords</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span><span class="o">:</span> <span class="p">[</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">yeoman</span><span class="o">-</span><span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">scaffold</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">generator</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">framework</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">mvc</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">phaser</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">gulp</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">ldquo</span><span class="p">;</span><span class="nx">requirejs</span><span class="o">&amp;</span><span class="nx">rdquo</span><span class="p">;</span>
+  <span class="p">],</span>
+  <span class="c1">//.. rest is omitted</span>
+<span class="p">}</span></code></pre></div></p>
+
+<p>Before you publish remember these notes; set your package name properly, set a version number and bump it with every publish, set a description, set a github repository url, set your author details, set your keywords properly, and add a <code>yeoman-generator</code> keyword. Note that the repository field should fit either of these formats or it won&rsquo;t get listed in the yeoman website, <code>"repository": "eguneys/generator-phaserjs"</code>, <code>"repository": "git://github.com/eguneys/generator-phaserjs"</code>.</p>
+
+<h2>Conclusion</h2>
+
+<p>In this article we have built a yeoman generator for Phaser using test driven development with mocha. We have learned how to write tests using BDD syntax, and use yeoman test helpers to ease testing, how to write yeoman generators using the yeoman generator API. Finally we have learned how to manually test our generator and publish it as a global npm module. You can find the full source code at <a href="https://github.com/eguneys/generator-phaserjs">github</a>. Note that you should always search similar generators and see their source code before you write your own and I recommend using our approach and building your project template first, as we did in the first article, then writing your generator will be greatly simplified.</p>
+
+<p>There are more that we haven&rsquo;t covered you can do with yeoman API, such as user interaction, composability, storing user configuration and much more. For more information see the official yeoman website and these useful links.</p>
+
+<ul>
+<li><a href="http://yeoman.io/generators/">generator list</a>.</li>
+<li><a href="http://yeoman.github.io/generator/">API documentation</a>.</li>
+<li><a href="http://code.tutsplus.com/tutorials/build-your-own-yeoman-generator--cms-20040">tuts+ tutorial</a>.</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Let's Build a Yeoman Generator: Project Template /w Gulp]]></title>
+    <link href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/"/>
+    <updated>2014-09-17T12:14:32+03:00</updated>
+    <id>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+<p><a href="http://yeoman.io">Yeoman</a> is a project scaffolding tool, it defines your work-flow, and scaffolds the boilerplate. <a href="http://gulpjs.com">Gulp</a> is a build system, alternative to grunt, it is stream based, and prefers code over configuration.</p>
+
+<p>In this two series articles we will learn how to build a yeoman generator from scratch, using test driven development. for Phaser game projects, which I before introduced in my previous article. We will use gulp as our build tool and requirejs for module loader.</p>
+
+<p>First step towards a yeoman generator, is building a project template. yeoman is only responsible for scaffolding. The rest is building the project with gulp and having a project template. In this article we will build our project template using gulp and requirejs, in the next article we will introduce yeoman, and start test driven development.</p>
+
+<h2>Initialize Phaser Game Project</h2>
+
+<p>The Phaser is a game framework that runs on browser, as we develop our game, we will run the game on the browser and live reload the changes. We will use npm for our development dependencies, and bower for the front end dependencies.</p>
+
+<p>First we initialize npm.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm init</code></pre></div></p>
+
+<p>This will ask various questions and create a <code>package.json</code> file for us.</p>
+
+<p>Next we initialize bower the same way, and create a <code>bower.json</code> file.
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">bower init</code></pre></div></p>
+
+<h2>Decide a directory structure</h2>
+
+<p>The next step is to decide a directory structure for the project.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|&amp;</span>ndash<span class="p">;</span> app
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> data
+<span class="p">|</span>   <span class="p">|&amp;</span>ndash<span class="p">;</span> index.html
+<span class="p">|</span>   &lt;code&gt;-- scripts
+<span class="p">|</span>       <span class="p">|</span>-- app.js
+<span class="p">|</span>       <span class="p">|</span>-- common.js
+<span class="p">|</span>       <span class="p">|</span>-- config.js
+<span class="p">|</span>       <span class="p">|</span>-- lib_main.js
+<span class="p">|</span>       <span class="p">|</span>-- main.js
+<span class="p">|</span>       <span class="p">|</span>-- prefabs
+<span class="p">|</span>      &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> states
+<span class="p">|</span>           <span class="p">|&amp;</span>ndash<span class="p">;</span> boot.js
+<span class="p">|</span>           &lt;code&gt;-- preload.js
+<span class="p">|</span>-- bower.json
+<span class="p">|</span>-- build
+<span class="p">|</span>   <span class="p">|</span>-- wrap.end
+<span class="p">|</span>  &lt;/code&gt;<span class="p">&amp;</span>ndash<span class="p">;</span> wrap.start
+<span class="p">|&amp;</span>ndash<span class="p">;</span> gulpfile.js
+<span class="sb">`</span><span class="p">&amp;</span>ndash<span class="p">;</span> package.json&lt;/p&gt;
+
+&lt;p&gt;</code></pre></div></p>
+
+<p><code>app</code> folder is where our application code resides. <code>build</code> folder is for files used by requirejs optimizer. We have our <code>package.json</code>, <code>bower.json</code> and <code>gulpfile.js</code>. The project will compile into <code>public</code> directory as we will see later.</p>
+
+<h3>Configure bower and jshint</h3>
+
+<p>npm will install it&rsquo;s dependencies in the <code>node_modules</code> folder, and bower will install it&rsquo;s dependencies in the <code>bower_components</code> folder, but, yet we can configure the default directory for bower using a <code>.bowerrc</code></p>
+
+<p>Create a <code>.bowerrc</code> file and add these in.</p>
+
+<p><code>File: .bowerrc</code></p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="o">{</span>
+  <span class="p">&amp;</span>ldquo<span class="p">;</span>directory<span class="p">&amp;</span>rdquo<span class="p">;</span>: <span class="p">&amp;</span>ldquo<span class="p">;</span>app/bower_components<span class="p">&amp;</span>rdquo<span class="p">;</span>
+<span class="o">}</span></code></pre></div></p>
+
+<p>Next, create a <code>.jshintrc</code> file. and setup your configuration.</p>
+
+<p>Finally install the bower dependencies and save them in the <code>bower.json</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>bower install requirejs almond phaser <span class="p">&amp;</span>ndash<span class="p">;</span>save</code></pre></div></p>
+
+<p>Note we use <code>--save</code> flag to make our changes saved in <code>bower.json</code>. We have three dependencies, requirejs the module loader, almond that we discussed in the previous article about requirejs, and Phaser the game framework.</p>
+
+<h2>gulp.js, The streaming build system</h2>
+
+<p>We have three types of tasks that gulp can help us for our project. Building the project, linting, and injecting code to our project, that is injecting our bower dependencies to our requirejs configuration file, and serving the project and watching for changes.</p>
+
+<p>We will use gulp plugins and other npm modules to help us, the first plugin we use is <code>gulp-load-plugins</code>, that automatically loads any gulp plugins we have in our <code>package.json</code>, that is convenient.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulp</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulp</span><span class="o">-</span><span class="nx">load</span><span class="o">-</span><span class="nx">plugins</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;)();</span>
+<span class="kd">var</span> <span class="nx">rimraf</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">rimraf</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span>
+<span class="kd">var</span> <span class="nx">runSequence</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">run</span><span class="o">-</span><span class="nx">sequence</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span></code></pre></div></p>
+
+<p>Note that we assign <code>gulp-load-plugins</code> to <code>$</code>, that is all the plugins are attached to. We also require two other npm modules, <code>rimraf</code> for removing files/folders, and <code>runSequence</code> for running gulp tasks in sync. Because gulp runs tasks asynchronously by default.</p>
+
+<h3>gulp; build the project!</h3>
+
+<p>First task is simple, <code>clean</code>, that will remove the build folder.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">clean</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">rimraf</span><span class="p">(</span><span class="nx">paths</span><span class="p">.</span><span class="nx">dist</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>This is how you define a gulp task. notice we pass <code>cb</code> as a parameter, that makes the gulp task asynchronous. It will be called once the task is done and tell gulp to continue with the other tasks. By default gulp will run all the tasks and wait for nothing.</p>
+
+<p>Next task is building the extra files in the <code>app</code> directory. In our case it&rsquo;s <code>index.html</code>, you might have extra <code>favicon.ico</code> or <code>robots.txt</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">extras</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;&amp;rsquo;)</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p><code>gulp.src</code> takes a glob and represents a file structure, which then can be piped to plugins. <code>gulp.dest</code> can be piped to and it will write files. In our case we take all the files in app folder, <code>app/*.*</code>, and write them into <code>public</code> folder.</p>
+
+<p>Next task is building the scripts. In our case this is moving the scripts into the <code>public</code> directory. We might have used minification, optimization and concatenation, we don&rsquo;t need it. We have an extra task that uses requirejs optimizer to optimize the script files and build a stand-alone code you can check out the <a href="https://github.com/eguneys/phaser-gulp-requirejs">source code</a> for this article.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">commonjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">mergeStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">merge</span><span class="o">-</span><span class="nx">stream</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">bowers</span> <span class="o">=</span> <span class="nx">gulp</span>
+      <span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">bower_components</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">lib</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">lib</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="kd">var</span> <span class="nx">common</span> <span class="o">=</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="kr">public</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">app</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="k">return</span> <span class="nx">mergeStream</span><span class="p">([</span><span class="nx">bowers</span><span class="p">,</span> <span class="nx">common</span><span class="p">]);</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>Note that, we use <code>merge-stream</code> that combines two gulp streams together, and we return the stream. Remember we passed an extra parameter, <code>cb</code> to gulp that made the task asynchronous, this is a second way of doing that, returning the stream also makes the task run asynchronous. The third way of making a task asynchronous is to return a promise. For more information about gulp API see <a href="https://github.com/gulpjs/gulp/blob/master/docs/API.md">docs</a>.</p>
+
+<p>Finally we have our <code>build</code> task, that will run the <code>clean</code>, <code>jshint-fail</code>, and <code>build-requirejs</code> tasks synchronously in that order.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">runSequence</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">clean</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">-</span><span class="nx">commonjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="k">default</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">build</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]);</span></code></pre></div></p>
+
+<p>Note that, we also have a special <code>default</code> task, that will run with only <code>gulp</code> command, opposed to <code>gulp build</code>.</p>
+
+<p>By default, tasks are run concurrently, as opposed to grunt which runs the tasks in series. To run a list of tasks in sync either tasks have to be asynchronous and have to depend on each other or you need to run tasks via <code>runSequence</code>.</p>
+
+<h3>gulp; lint, and inject some code!</h3>
+
+<p>Next task, is linting our code with <code>jshint</code>, there is a gulp plugin we access it using <code>$.jshint</code>, remember <code>gulp-load-plugins</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulpfile</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span>
+    <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="err">/*.js&amp;rsquo;,</span>
+    <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="o">!</span><span class="nx">app</span><span class="o">/</span><span class="nx">bower_components</span><span class="o">/&lt;</span><span class="err">/strong&gt;&amp;rsquo;])</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">jshint</span><span class="o">-</span><span class="nx">stylish</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">fail</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+  <span class="p">});</span></code></pre></div></p>
+
+<p>Note that we pipe the jshint plugin and the jshint reporters to the gulp stream. Visit <a href="https://github.com/yeoman/bower-requirejs">here</a> for more information on jshint plugin.</p>
+
+<p>There is an npm module <a href="https://github.com/yeoman/bower-requirejs">bower-requirejs</a>, that wires up installed bower components into requirejs config, we also use it in our gulp task, though I won&rsquo;t show it here.</p>
+
+<h3>gulp; serve and watch files!</h3>
+
+<p>Next task, is serving our project to the browser, we use <a href="https://github.com/schickling/gulp-webserver">gulp-webserver</a> plugin for that. It will start a connect server and serve our files as well as watch them and run a live reload server and inject a live reload script so the browser will auto refresh when a file is changed.</p>
+
+<p>Final task is <code>watch</code> task, that will watch our source files for changes and run various tasks on change.</p>
+
+<p><div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">watch</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">serve</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;],</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;*</span><span class="err">/&lt;/em&gt;.js&amp;rsquo;, [&amp;lsquo;build-commonjs&amp;rsquo;]);&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">app</span><span class="o">/&lt;</span><span class="nx">em</span><span class="o">&gt;</span><span class="p">.</span><span class="o">&lt;</span><span class="err">/em&gt;&amp;rsquo;, [&amp;lsquo;build-extras&amp;rsquo;]);&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">bower</span><span class="p">.</span><span class="nx">json</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="p">[</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">bower</span><span class="o">-</span><span class="nx">rjs</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;]);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="nx">gulpfile</span><span class="p">.</span><span class="nx">js</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">util</span><span class="p">.</span><span class="nx">colors</span><span class="p">.</span><span class="nx">red</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">-&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span>
+                                  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">nRestart</span> <span class="nx">the</span> <span class="nx">Gulp</span> <span class="nx">process</span><span class="o">&amp;</span><span class="nx">rsquo</span><span class="p">;</span> <span class="o">+</span>
+                                  <span class="o">&amp;</span><span class="nx">lsquo</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">&amp;</span><span class="nx">mdash</span><span class="p">;</span><span class="o">-&amp;</span><span class="nx">rsquo</span><span class="p">;));</span>
+  <span class="p">});</span>
+<span class="p">});</span></code></pre></div></p>
+
+<p>You might wonder, <code>gulp-webserver</code> is also watching the folders, why we need gulp to watch again. Well gulp watches the source files, and runs tasks that compiles the source into the <code>public</code> folder, meanwhile <code>gulp-webserver</code> watches the <code>public</code> folder for changes, and refreshes the browser on change.</p>
+
+<p>Also note that &lsquo;watch&rsquo; task depends on &lsquo;serve&rsquo; task, we tell that by passing a dependency array as the second argument to <code>gulp.task</code>.</p>
+
+<p>Here are the list of dependencies we&rsquo;ve used in this article and the command to install and save them in the <code>package.json</code>.</p>
+
+<p><div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install <span class="p">&amp;</span>ndash<span class="p">;</span>save-dev gulp gulp-load-plugins gulp-changed gulp-imagemin gulp-livereload gulp-webserver gulp-util gulp-jshint jshint-stylish rimraf merge-stream run-sequence bower-requirejs requirejs</code></pre></div></p>
+
+<p>There are many gulp plug-ins listed in the <a href="http;//gulpjs.com/plugins">official website</a>. Yet gulp is sensitive about plugins, that there should be one, if it is only necessary, and they have a <a href="https://github.com/gulpjs/plugins/blob/master/src/blackList.json">blacklist of plugins</a> that should not be used, so pick your plugins carefully, and use bare npm modules wherever possible. Also checkout the <a href="https://github.com/gulpjs/gulp/blob/master/docs/README.md">documentation</a> and <a href="https://github.com/gulpjs/gulp/tree/master/docs/recipes">recipes</a> for achieving various tasks.</p>
+
+<h2>Conclusion</h2>
+
+<p>In this article we have built a project template for Phaser using gulp as our build tool, and requirejs as our module loader. We have learned how to define gulp tasks and how to make use of gulp plug-ins to enable us a nice development environment, with watching files and live-reloading our changes. Note that yet we used Phaser as a sample project, this will give you the main idea, and hopefully you will apply the same principles to your specific projects. You can find the full source code at <a href="https://github.com/eguneys/phaser-gulp-requirejs">github</a>.</p>
+
+<p>In the next article we will use this project template to build a yeoman generator, we will also show test driven development using mocha and yeoman test helpers.</p>
+]]></content>
+  </entry>
+  
+</feed>
