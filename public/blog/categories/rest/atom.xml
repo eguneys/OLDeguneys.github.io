@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Rest | Fullstack Development w/ Javascript]]></title>
-  <link href="http://eguneys.github.io/blog/categories/rest/atom.xml" rel="self"/>
-  <link href="http://eguneys.github.io/"/>
-  <updated>2014-09-17T13:01:31+03:00</updated>
-  <id>http://eguneys.github.io/</id>
+  <link href="http://www.eguneys.com/blog/categories/rest/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-09-18T13:52:18+03:00</updated>
+  <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Building a Voting App: REST API /w Sequelize]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
     <updated>2014-09-17T12:15:56+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
 <p><a href="http://sequelizejs.com">Sequelize</a> is an ORM (Object Relational Mapper) for NodeJS that provides easy access to various databases like MySQL, MariaDB, SQLite, or PostgreSQL.</p>

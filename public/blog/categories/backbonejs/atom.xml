@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Backbonejs | Fullstack Development w/ Javascript]]></title>
-  <link href="http://eguneys.github.io/blog/categories/backbonejs/atom.xml" rel="self"/>
-  <link href="http://eguneys.github.io/"/>
-  <updated>2014-09-17T13:01:31+03:00</updated>
-  <id>http://eguneys.github.io/</id>
+  <link href="http://www.eguneys.com/blog/categories/backbonejs/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-09-18T13:52:18+03:00</updated>
+  <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Site Navigation]]></title>
-    <link href="http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation/"/>
+    <link href="http://www.eguneys.com/blog/2014/01/01/getting-started-fullstack-site-navigation/"/>
     <updated>2014-01-01T11:52:06+02:00</updated>
-    <id>http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation</id>
+    <id>http://www.eguneys.com/blog/2014/01/01/getting-started-fullstack-site-navigation</id>
     <content type="html"><![CDATA[<p>In previous post we&rsquo;ve seen how to setup a node.js server and serve our index.html.
 In this post, we will implement navigation in our site using backbone.js. At the end of this tutorial,
 you will be able to navigate between tabs in your site.</p>
@@ -296,9 +296,9 @@ with jquery before.</p>
 <p>While we&rsquo;re at it, let&rsquo;s add the new script files we&rsquo;ve created to the index.html as well.</p>
 
 <p><em>index.html</em>
-<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://eguneys.github.io/js/views/nav.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://eguneys.github.io/js/views/main.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://eguneys.github.io/js/app.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span></code></pre></div></p>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://www.eguneys.com/js/views/nav.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://www.eguneys.com/js/views/main.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+      <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://www.eguneys.com/js/app.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span></code></pre></div></p>
 
 <h1>Main Function</h1>
 
@@ -335,7 +335,7 @@ We pass the el property for the views here as mentioned previously. and <em>Navi
     <span class="ni">&amp;lt;</span>div class=&quot;col-lg-12&quot;<span class="ni">&amp;gt;</span>
       <span class="ni">&amp;lt;</span>h1 class=&quot;page-header&quot;<span class="ni">&amp;gt;</span> Blog Home <span class="ni">&amp;lt;</span>small<span class="ni">&amp;gt;</span> Blog Homepage<span class="ni">&amp;lt;</span>/small<span class="ni">&amp;gt;&amp;lt;</span>/h1<span class="ni">&amp;gt;</span>
       <span class="ni">&amp;lt;</span>ol class=&quot;breadcrumb&quot;<span class="ni">&amp;gt;</span>
-        <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>a href=&quot;http://eguneys.github.io/&quot;<span class="ni">&amp;gt;</span>Home<span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
+        <span class="ni">&amp;lt;</span>li<span class="ni">&amp;gt;&amp;lt;</span>a href=&quot;http://www.eguneys.com/&quot;<span class="ni">&amp;gt;</span>Home<span class="ni">&amp;lt;</span>/a<span class="ni">&amp;gt;&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
         <span class="ni">&amp;lt;</span>li class=&quot;active&quot;<span class="ni">&amp;gt;</span>Blog Home <span class="ni">&amp;lt;</span>/li<span class="ni">&amp;gt;</span>
       <span class="ni">&amp;lt;</span>/ol<span class="ni">&amp;gt;</span>
     <span class="ni">&amp;lt;</span>/div<span class="ni">&amp;gt;</span>

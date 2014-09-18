@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Mongodb | Fullstack Development w/ Javascript]]></title>
-  <link href="http://eguneys.github.io/blog/categories/mongodb/atom.xml" rel="self"/>
-  <link href="http://eguneys.github.io/"/>
-  <updated>2014-09-17T13:01:31+03:00</updated>
-  <id>http://eguneys.github.io/</id>
+  <link href="http://www.eguneys.com/blog/categories/mongodb/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-09-18T13:52:18+03:00</updated>
+  <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Building API With Baucis]]></title>
-    <link href="http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
+    <link href="http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
     <updated>2014-01-06T11:52:06+02:00</updated>
-    <id>http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
+    <id>http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
     <content type="html"><![CDATA[<p>In previous post, we&rsquo;ve seen how to navigate in our site using
 backbone.js. In this post, we will go back to server side, and build
 our blog api using <a href="https://github.com/wprl/baucis">baucis</a>. At the
@@ -157,9 +157,9 @@ the blogs in our main page.</p></blockquote>
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Setting Up the Server]]></title>
-    <link href="http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
+    <link href="http://www.eguneys.com/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
     <updated>2013-12-31T02:52:07+02:00</updated>
-    <id>http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
+    <id>http://www.eguneys.com/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
     <content type="html"><![CDATA[<p>Getting Started Full Stack - Building a simple blog - Part 1</p>
 
 <p> In this post, we will install the required components to build a simple blog. In the end of this post, you will be serving a hello world page, with a responsive bootstrap theme, and all necessary script files.</p>

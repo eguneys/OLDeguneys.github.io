@@ -3,7 +3,7 @@
   
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/</loc>
+    <loc>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/</loc>
     
     <lastmod>2014-09-17T12:16:34+03:00</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/</loc>
+    <loc>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/</loc>
     
     <lastmod>2014-09-17T12:15:56+03:00</lastmod>
     
@@ -19,7 +19,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-2/</loc>
+    <loc>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-2/</loc>
     
     <lastmod>2014-09-17T12:14:58+03:00</lastmod>
     
@@ -27,7 +27,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/</loc>
+    <loc>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/</loc>
     
     <lastmod>2014-09-17T12:14:32+03:00</lastmod>
     
@@ -35,7 +35,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/</loc>
+    <loc>http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/</loc>
     
     <lastmod>2014-01-06T11:52:06+02:00</lastmod>
     
@@ -43,7 +43,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation/</loc>
+    <loc>http://www.eguneys.com/blog/2014/01/01/getting-started-fullstack-site-navigation/</loc>
     
     <lastmod>2014-01-01T11:52:06+02:00</lastmod>
     
@@ -51,7 +51,7 @@
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/</loc>
+    <loc>http://www.eguneys.com/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/</loc>
     
     <lastmod>2013-12-31T02:52:07+02:00</lastmod>
     
@@ -60,50 +60,50 @@
   
   
   <url>
-    <loc>http://eguneys.github.io/404.html</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/404.html</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/categories/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/categories/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/archives/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/archives/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/blog/archives/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/blog/archives/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/about/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/about/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>http://eguneys.github.io/posts/</loc>
-    <lastmod>2014-09-17T13:01:31+03:00</lastmod>
+    <loc>http://www.eguneys.com/posts/</loc>
+    <lastmod>2014-09-18T13:52:18+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Frontend | Fullstack Development w/ Javascript]]></title>
-  <link href="http://eguneys.github.io/blog/categories/frontend/atom.xml" rel="self"/>
-  <link href="http://eguneys.github.io/"/>
-  <updated>2014-09-17T13:01:31+03:00</updated>
-  <id>http://eguneys.github.io/</id>
+  <link href="http://www.eguneys.com/blog/categories/frontend/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-09-18T13:52:18+03:00</updated>
+  <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Building a Voting App: Front-end /w Ember]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
     <updated>2014-09-17T12:16:34+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
 <p>In the <a href="/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/">previous article</a> we&rsquo;ve built a REST API for a voting application using sequelize. In this article we will consume this API and build the front end using emberjs. We also mentioned about, <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a>, a yeoman generator for fullstack applications using emberjs and express, that we used to scaffold our application.</p>

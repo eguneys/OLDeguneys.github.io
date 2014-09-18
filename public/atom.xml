@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Fullstack Development w/ Javascript]]></title>
-  <link href="http://eguneys.github.io/atom.xml" rel="self"/>
-  <link href="http://eguneys.github.io/"/>
-  <updated>2014-09-17T13:01:31+03:00</updated>
-  <id>http://eguneys.github.io/</id>
+  <link href="http://www.eguneys.com/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-09-18T13:52:18+03:00</updated>
+  <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
     
@@ -15,12 +15,12 @@
   
   <entry>
     <title type="html"><![CDATA[Building a Voting App: Front-end /w Ember]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
     <updated>2014-09-17T12:16:34+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
-<p>In the <a href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/">previous article</a> we&rsquo;ve built a REST API for a voting application using sequelize. In this article we will consume this API and build the front end using emberjs. We also mentioned about, <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a>, a yeoman generator for fullstack applications using emberjs and express, that we used to scaffold our application.</p>
+<p>In the <a href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/">previous article</a> we&rsquo;ve built a REST API for a voting application using sequelize. In this article we will consume this API and build the front end using emberjs. We also mentioned about, <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a>, a yeoman generator for fullstack applications using emberjs and express, that we used to scaffold our application.</p>
 
 <p>The voting application will be where users can vote for a poll and see the results of the poll. You can see a live example <a href="http://votefree.herokuapp.com">here</a>.</p>
 
@@ -341,9 +341,9 @@
   
   <entry>
     <title type="html"><![CDATA[Building a Voting App: REST API /w Sequelize]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
     <updated>2014-09-17T12:15:56+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
 <p><a href="http://sequelizejs.com">Sequelize</a> is an ORM (Object Relational Mapper) for NodeJS that provides easy access to various databases like MySQL, MariaDB, SQLite, or PostgreSQL.</p>
@@ -726,12 +726,12 @@
   
   <entry>
     <title type="html"><![CDATA[Let's Build a Yeoman Generator 2]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-2/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-2/"/>
     <updated>2014-09-17T12:14:58+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-2</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-2</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
-<p>In the previous <a href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/">article</a> we built a Phaser project template, that used gulp as a build tool. In this article we will build a yeoman generator, for scaffolding, generating boilerplate from that template. We will also use mocha to write tests and see how to do test driven development. Finally we will publish it to npm.</p>
+<p>In the previous <a href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/">article</a> we built a Phaser project template, that used gulp as a build tool. In this article we will build a yeoman generator, for scaffolding, generating boilerplate from that template. We will also use mocha to write tests and see how to do test driven development. Finally we will publish it to npm.</p>
 
 <h2>Initialize Yeoman Generator</h2>
 
@@ -739,7 +739,7 @@
 
 <p>First install mocha with npm:</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm insall -g mocha</code></pre></div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install -g mocha</code></pre></div>
 
 
 <p>Next we initialize npm, and create our <code>package.json</code> file.</p>
@@ -1100,9 +1100,9 @@
   
   <entry>
     <title type="html"><![CDATA[Let's Build a Yeoman Generator: Project Template /w Gulp]]></title>
-    <link href="http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/"/>
+    <link href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/"/>
     <updated>2014-09-17T12:14:32+03:00</updated>
-    <id>http://eguneys.github.io/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp</id>
+    <id>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp</id>
     <content type="html"><![CDATA[<h2>Introduction</h2>
 
 <p><a href="http://yeoman.io">Yeoman</a> is a project scaffolding tool, it defines your work-flow, and scaffolds the boilerplate. <a href="http://gulpjs.com">Gulp</a> is a build system, alternative to grunt, it is stream based, and prefers code over configuration.</p>
@@ -1305,9 +1305,9 @@
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Building API With Baucis]]></title>
-    <link href="http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
+    <link href="http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
     <updated>2014-01-06T11:52:06+02:00</updated>
-    <id>http://eguneys.github.io/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
+    <id>http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
     <content type="html"><![CDATA[<p>In previous post, we&rsquo;ve seen how to navigate in our site using
 backbone.js. In this post, we will go back to server side, and build
 our blog api using <a href="https://github.com/wprl/baucis">baucis</a>. At the
@@ -1446,9 +1446,9 @@ the blogs in our main page.</p></blockquote>
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Site Navigation]]></title>
-    <link href="http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation/"/>
+    <link href="http://www.eguneys.com/blog/2014/01/01/getting-started-fullstack-site-navigation/"/>
     <updated>2014-01-01T11:52:06+02:00</updated>
-    <id>http://eguneys.github.io/blog/2014/01/01/getting-started-fullstack-site-navigation</id>
+    <id>http://www.eguneys.com/blog/2014/01/01/getting-started-fullstack-site-navigation</id>
     <content type="html"><![CDATA[<p>In previous post we&rsquo;ve seen how to setup a node.js server and serve our index.html.
 In this post, we will implement navigation in our site using backbone.js. At the end of this tutorial,
 you will be able to navigate between tabs in your site.</p>
@@ -1820,9 +1820,9 @@ We pass the el property for the views here as mentioned previously. and <em>Navi
   
   <entry>
     <title type="html"><![CDATA[Getting Started Fullstack: Setting Up the Server]]></title>
-    <link href="http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
+    <link href="http://www.eguneys.com/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1/"/>
     <updated>2013-12-31T02:52:07+02:00</updated>
-    <id>http://eguneys.github.io/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
+    <id>http://www.eguneys.com/blog/2013/12/31/getting-started-fullstack-building-a-simple-blog-part-1</id>
     <content type="html"><![CDATA[<p>Getting Started Full Stack - Building a simple blog - Part 1</p>
 
 <p> In this post, we will install the required components to build a simple blog. In the end of this post, you will be serving a hello world page, with a responsive bootstrap theme, and all necessary script files.</p>
