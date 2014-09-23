@@ -1,0 +1,61 @@
+<div hidden><!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!--
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<style shim-shadowdom="">html /deep/ [layout][horizontal],html /deep/ [layout][vertical]{display:-ms-flexbox;display:-webkit-flex;display:flex}html /deep/ [layout][horizontal][inline],html /deep/ [layout][vertical][inline]{display:-ms-inline-flexbox;display:-webkit-inline-flex;display:inline-flex}html /deep/ [layout][horizontal]{-ms-flex-direction:row;-webkit-flex-direction:row;flex-direction:row}html /deep/ [layout][horizontal][reverse]{-ms-flex-direction:row-reverse;-webkit-flex-direction:row-reverse;flex-direction:row-reverse}html /deep/ [layout][vertical]{-ms-flex-direction:column;-webkit-flex-direction:column;flex-direction:column}html /deep/ [layout][vertical][reverse]{-ms-flex-direction:column-reverse;-webkit-flex-direction:column-reverse;flex-direction:column-reverse}html /deep/ [layout][wrap]{-ms-flex-wrap:wrap;-webkit-flex-wrap:wrap;flex-wrap:wrap}html /deep/ [layout][wrap-reverse]{-ms-flex-wrap:wrap-reverse;-webkit-flex-wrap:wrap-reverse;flex-wrap:wrap-reverse}html /deep/ [flex]{-ms-flex:1 1 0;-webkit-flex:1;flex:1;-webkit-flex-basis:0;flex-basis:0}html /deep/ [vertical][layout]>[flex][auto-vertical],html /deep/ [vertical][layout]::shadow [flex][auto-vertical]{-ms-flex:1 1 auto;-webkit-flex-basis:auto;flex-basis:auto}html /deep/ [flex][auto]{-ms-flex:1 1 auto;-webkit-flex-basis:auto;flex-basis:auto}html /deep/ [flex][none]{-ms-flex:none;-webkit-flex:none;flex:none}html /deep/ [flex][one]{-ms-flex:1;-webkit-flex:1;flex:1}html /deep/ [flex][two]{-ms-flex:2;-webkit-flex:2;flex:2}html /deep/ [flex][three]{-ms-flex:3;-webkit-flex:3;flex:3}html /deep/ [flex][four]{-ms-flex:4;-webkit-flex:4;flex:4}html /deep/ [flex][five]{-ms-flex:5;-webkit-flex:5;flex:5}html /deep/ [flex][six]{-ms-flex:6;-webkit-flex:6;flex:6}html /deep/ [flex][seven]{-ms-flex:7;-webkit-flex:7;flex:7}html /deep/ [flex][eight]{-ms-flex:8;-webkit-flex:8;flex:8}html /deep/ [flex][nine]{-ms-flex:9;-webkit-flex:9;flex:9}html /deep/ [flex][ten]{-ms-flex:10;-webkit-flex:10;flex:10}html /deep/ [flex][eleven]{-ms-flex:11;-webkit-flex:11;flex:11}html /deep/ [flex][twelve]{-ms-flex:12;-webkit-flex:12;flex:12}html /deep/ [layout][start]{-ms-flex-align:start;-webkit-align-items:flex-start;align-items:flex-start}html /deep/ [layout][center],html /deep/ [layout][center-center]{-ms-flex-align:center;-webkit-align-items:center;align-items:center}html /deep/ [layout][end]{-ms-flex-align:end;-webkit-align-items:flex-end;align-items:flex-end}html /deep/ [layout][start-justified]{-ms-flex-pack:start;-webkit-justify-content:flex-start;justify-content:flex-start}html /deep/ [layout][center-justified],html /deep/ [layout][center-center]{-ms-flex-pack:center;-webkit-justify-content:center;justify-content:center}html /deep/ [layout][end-justified]{-ms-flex-pack:end;-webkit-justify-content:flex-end;justify-content:flex-end}html /deep/ [layout][around-justified]{-ms-flex-pack:distribute;-webkit-justify-content:space-around;justify-content:space-around}html /deep/ [layout][justified]{-ms-flex-pack:justify;-webkit-justify-content:space-between;justify-content:space-between}html /deep/ [self-start]{-ms-align-self:flex-start;-webkit-align-self:flex-start;align-self:flex-start}html /deep/ [self-center]{-ms-align-self:center;-webkit-align-self:center;align-self:center}html /deep/ [self-end]{-ms-align-self:flex-end;-webkit-align-self:flex-end;align-self:flex-end}html /deep/ [self-stretch]{-ms-align-self:stretch;-webkit-align-self:stretch;align-self:stretch}html /deep/ [block]{display:block}html /deep/ [hidden]{display:none!important}html /deep/ [relative]{position:relative}html /deep/ [fit]{position:absolute;top:0;right:0;bottom:0;left:0}body[fullbleed]{margin:0;height:100vh}html /deep/ [segment],html /deep/ segment{display:block;position:relative;-webkit-box-sizing:border-box;-ms-box-sizing:border-box;box-sizing:border-box;margin:1em .5em;padding:1em;background-color:#fff;-webkit-box-shadow:0 0 0 1px rgba(0,0,0,.1);box-shadow:0 0 0 1px rgba(0,0,0,.1);border-radius:5px}</style>
+
+<script src="../bower_components/polymer/polymer.js"></script>
+<!--<link rel="import" href="../polymer-dev/polymer.html">--> 
+
+<polymer-element name="sprite-el" assetpath="sprite-el/">
+  <template>
+    <style>:host{display:block}.sprite{position:absolute}</style>
+    <div class="sprite" style="top: {{posY}}px; left: {{posX}}px; height: {{frame.height}}px; width: {{frame.width}}px; background: url({{spriteUrl}}) {{frame.x}}px {{frame.y}}px">
+    </div>
+  </template>
+  <script>(function(){"use strict";Polymer("sprite-el",{publish:{spriteUrl:"images/soko/Spritesheet/sprites.png",frame:{x:0,y:0},position:{x:0,y:0},computed:{posX:"position.x * 64",posY:"position.y * 64"}}})})();</script>
+</polymer-element>
+</div><div hidden>
+
+<polymer-element name="box-el" assetpath="box-el/">
+  <template>
+    <style>:host{display:block}</style>
+    <sprite-el frame="{{frame}}" position="{{model.position}}" style="height: {{frame.height}}px; width: {{frame.width}}px;"></sprite-el>
+  </template>
+  <script>(function(){"use strict";Polymer("box-el",{publish:{model:{position:{x:0,y:0},type:"W"}},computed:{frame:"boxCoords[model.type]"},ready:function(){this.boxCoords={B:{x:"-192",y:"0",width:"64",height:"64"},BD:{x:"-128",y:"-256",width:"64",height:"64"},T:{x:"-64",y:"-384",width:"32",height:"32"},W:{x:"0",y:"-320",width:"64",height:"64"},G:{x:"-64",y:"-256",width:"64",height:"64"}}}})})();</script>
+</polymer-element>
+</div><div hidden>
+
+<polymer-element name="player-el" assetpath="player-el/">
+  <template>
+    <style>:host{display:block}</style>
+    <sprite-el position="{{model.position}}" frame="{{frame}}"></sprite-el>
+  </template>
+  <script>(function(){"use strict";Polymer("player-el",{publish:{model:{position:{x:0,y:0},frameKey:"down0"}},computed:{frame:"frames[model.frameKey]"},ready:function(){this.frames={left1:{x:"-320",y:"-186",width:"42",height:"59"},left2:{x:"-320",y:"-304",width:"42",height:"58"},right1:{x:"-320",y:"-245",width:"42",height:"59"},right2:{x:"-320",y:"-128",width:"42",height:"58"},down0:{x:"-362",y:"-248",width:"37",height:"59"},down1:{x:"-320",y:"-362",width:"37",height:"59"},down2:{x:"-357",y:"-362",width:"37",height:"59"},up0:{x:"-384",y:"0",width:"37",height:"60"},up1:{x:"-362",y:"-188",width:"37",height:"60"},up2:{x:"-362",y:"-128",width:"37",height:"60"}}}})})();</script>
+</polymer-element>
+</div><div hidden>
+
+<polymer-element name="soko-ban" assetpath="soko-ban/">
+  <template>
+    <style>:host{display:inline-block;height:400px;width:400px}</style>
+    <template repeat="{{box in boxes}}">
+      <box-el model="{{box}}"></box-el>
+    </template>
+    <player-el model="{{player}}" id="character"></player-el>
+  </template>
+  <script>(function(){"use strict";Polymer("soko-ban",{ready:function(){this.refresh();var inputManager=new KeyboardInputManager;var char=this.$.character;inputManager.on("move",function(val){var controller=this.controller;var model=this.model;switch(val){case KeyboardInputManager.Direction.UP:controller.move(GameController.Direction.UP);break;case KeyboardInputManager.Direction.RIGHT:controller.move(GameController.Direction.RIGHT);break;case KeyboardInputManager.Direction.DOWN:controller.move(GameController.Direction.DOWN);break;case KeyboardInputManager.Direction.LEFT:controller.move(GameController.Direction.LEFT);break}if(controller.isGameOver()){this.fire("finished",{target:model.target})}}.bind(this))},refresh:function(){this.controller=new GameController;this.model=this.controller.getModel();this.player=this.model.player;this.boxes=this.model.boxes}})})();</script>
+</polymer-element>
+</div>

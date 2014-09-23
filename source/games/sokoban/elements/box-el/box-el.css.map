@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,KAAM,CACJ,OAAO,CAAE,KAAK",
+"sources": ["../../../app/elements/box-el/box-el.scss"],
+"names": [],
+"file": "box-el.css"
+}

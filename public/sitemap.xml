@@ -61,53 +61,137 @@
   
   <url>
     <loc>http://www.eguneys.com/404.html</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/categories/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/archives/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/blog/archives/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/about/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/posts/</loc>
-    <lastmod>2014-09-18T14:14:09+03:00</lastmod>
+    <lastmod>2014-09-23T13:30:23+03:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/elements.vulcanized.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/box-el/box-el.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/elements.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/sprite-el/sprite-el.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/soko-ban/soko-ban.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/player-el/player-el.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/core-component-page/index.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/core-component-page/demo.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/core-component-page/core-component-page.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer/polymer.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer/layout.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer-test-tools/tools.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/index.html</loc>
+    <lastmod>2014-09-23T13:30:01Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/404.html</loc>
+    <lastmod>2014-09-23T13:19:00Z</lastmod>
+    <priority>0.6</priority>
+  </url>
   
 </urlset>
