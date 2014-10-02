@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="sprite-el">
+  <template>
+    <link rel="stylesheet" href="sprite-el.css">
+    <div class="sprite" style="top: {{posY}}px; left: {{posX}}px; height: {{frame.height}}px; width: {{frame.width}}px; background: url({{spriteUrl}}) {{frame.x}}px {{frame.y}}px">
+    </div>
+  </template>
+  <script>
+    (function () {
+      'use strict';
+
+      Polymer({
+       publish: {
+         spriteUrl: 'images/soko/Spritesheet/sprites.png',
+         frame: {
+           x: 0,
+           y: 0
+         },
+         position: {
+           x: 0,
+           y: 0
+         },
+
+         computed: {
+           posX: 'position.x * 64',
+           posY: 'position.y * 64'
+         }
+       }
+     });
+
+    })();
+  </script>
+</polymer-element>

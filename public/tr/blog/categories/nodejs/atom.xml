@@ -1,0 +1,2267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Nodejs | Fullstack Development w/ Javascript]]></title>
+  <link href="http://www.eguneys.com/blog/categories/nodejs/atom.xml" rel="self"/>
+  <link href="http://www.eguneys.com/"/>
+  <updated>2014-10-02T14:27:51+03:00</updated>
+  <id>http://www.eguneys.com/</id>
+  <author>
+    <name><![CDATA[Emre Guneyler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Voting App: Front-end /w Ember]]></title>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember/"/>
+    <updated>2014-09-17T12:16:34+03:00</updated>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-front-end-slash-w-ember</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+
+
+
+<p>In the <a href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/">previous article</a> we&rsquo;ve built a REST API for a voting application using sequelize. In this article we will consume this API and build the front end using emberjs. We also mentioned about, <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a>, a yeoman generator for fullstack applications using emberjs and express, that we used to scaffold our application.</p>
+
+
+
+
+<p>The voting application will be where users can vote for a poll and see the results of the poll. You can see a live example <a href="http://votefree.herokuapp.com">here</a>.</p>
+
+
+
+
+<h2>Scaffold Ember Application</h2>
+
+
+
+
+<p>In the previous article we used generator-emberfs for server side, we will continue using it for client side as well. It supports scaffolding, asset compilation, optimization for production, live reloading and test driven development. It uses <a href="http://gulpjs.com">gulp</a> for build system.</p>
+
+
+
+
+<p>You can launch the server and listen for changes using the command:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">gulp devserver</code></pre></div>
+
+
+
+
+<p>Or you can build and optimize your application for production:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">gulp build</code></pre></div>
+
+
+
+
+<h3>Directory Structure</h3>
+
+
+
+
+<p>This is our directory structure for client side. <code>vendor</code> folder contains third party libraries, <code>templates</code> folder contains handlebars templates, <code>styles</code> folder contains css styles in sass, <code>scripts</code> folder contains the emberjs application code.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">app/client
+<span class="p">|</span>-- scripts
+<span class="p">|</span>   <span class="p">|</span>-- app.js
+<span class="p">|</span>   <span class="p">|</span>-- common.js
+<span class="p">|</span>   <span class="p">|</span>-- components
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- progress-bar.js
+<span class="p">|</span>   <span class="p">|</span>-- controllers
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- index_controller.js
+<span class="p">|</span>   <span class="p">|</span>-- main.js
+<span class="p">|</span>   <span class="p">|</span>-- mixins
+<span class="p">|</span>   <span class="p">|</span>-- models
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- poll_model.js
+<span class="p">|</span>   <span class="p">|</span>-- router.js
+<span class="p">|</span>   <span class="p">|</span>-- routes
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- index_route.js
+<span class="p">|</span>   <span class="sb">`</span>-- views
+<span class="p">|</span>-- styles
+<span class="p">|</span>   <span class="sb">`</span>-- style.scss
+<span class="p">|</span>-- templates
+<span class="p">|</span>   <span class="sb">`</span>-- components
+<span class="sb">`</span>-- vendor</code></pre></div>
+
+
+
+
+<p>Note that this folder structure is boilerplate for the generator-emberfs. It uses requirejs with AMD modules. But, yet we won&rsquo;t get into details of requirejs in this article, rather stick to essential codes for emberjs.</p>
+
+
+
+
+<h2>Routes in Ember</h2>
+
+
+
+
+<p>We won&rsquo;t define any particular route for this simple application. Rather we will use the default <code>IndexRoute</code> Ember provides.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">Router</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="p">});</span>
+
+<span class="nx">App</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">reopen</span><span class="p">({</span>
+  <span class="nx">location</span><span class="o">:</span> <span class="s1">&#39;history&#39;</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Our <code>IndexRoute</code> will have the poll #1 as its model. Remember we have provided a seed model as the poll #1 in sequelize, in the previous article.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">IndexRoute</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Route</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">model</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// GET api/v1/polls/1</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;poll&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p><code>this.store</code> uses ember-data to pull the models. It uses an adapter, which is in our case a <code>DS.RESTAdapter</code>. So this code will make a request to <code>api/v1/polls/1</code> to build a model. Later we can use the model in our controller and templates.</p>
+
+
+
+
+<h3>Templates in Handlebars</h3>
+
+
+
+
+<p>Let&rsquo;s drop a skeleton template using bootstrap for style and handlebars for bindings. I will use emblem formatting just for efficient view.</p>
+
+
+
+
+<p><code>File: templates/index.hbs</code></p>
+
+
+
+
+<div><script src='https://gist.github.com/b46c4bce03a532b48397.js'></script>
+<noscript><pre><code>.container
+  .row
+    .col-md-12
+      h3 Sample Vote Application
+      .lead
+        ?
+
+      div class=&quot;poll-choices &quot;
+        each choices
+          .row
+            .col-md-6
+              button.btn.btn-info.pull-right click=&quot;vote id&quot;
+                h4: 
+            .col-md-6
+              p: 
+          .row
+            .col-md-12.text-center
+              button.btn.btn-link click=&quot;showResults&quot;: Show results
+              i.fa.fa-arrow-right
+
+      div class=&quot;poll-results &quot;
+        .row
+          .col-md-8.col-md-offset-2.text-center
+            each pollChoices
+              .progress
+                progress-bar text=text percent=vote-percent
+        .row
+          .col-md-12.text-center
+            h4: Total Voted: 
+</code></pre></noscript></div>
+
+
+
+
+<p>Here, we have a <code>` binding, main header for the poll. and one</code>div <code>binding for showing the poll choices and allowing vote. and a</code>div ` binding for showing the poll results.</p>
+
+
+
+
+<p>In the poll results we use a, <code>progress-bar text=text percent=vote-percent</code>, ember component to display the results, which we will mention later.</p>
+
+
+
+
+<p>Finally we have various actions for communicating with the model <code>click="showResults"</code>, and <code>click="vote id"</code>. These actions are handled in ember controller and will be discussed later.</p>
+
+
+
+
+<h2>Models in Ember Data</h2>
+
+
+
+
+<p>Just as we defined data models for sequelize, we will define the same models for emberjs using ember-data. We will use ember-data <code>DS.RESTAdapter</code> for communicating with the REST API.</p>
+
+
+
+
+<p>In the previous article We mentioned about our three models <code>Poll</code>, <code>Choice</code>, and <code>Vote</code> and the relationships between them. Here we define the same relationships using ember-data.</p>
+
+
+
+
+<p><code>File: models/poll_model.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">Poll</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">),</span>
+    <span class="nx">choices</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="s1">&#39;choice&#39;</span><span class="p">)</span>
+  <span class="p">});</span>
+
+  <span class="nx">App</span><span class="p">.</span><span class="nx">Choice</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">text</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">),</span>
+    <span class="nx">description</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">),</span>
+    <span class="nx">count</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">),</span>
+    <span class="nx">votes</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="s1">&#39;vote&#39;</span><span class="p">),</span>
+    <span class="nx">poll</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="s1">&#39;poll&#39;</span><span class="p">)</span>
+  <span class="p">});</span>
+
+  <span class="nx">App</span><span class="p">.</span><span class="nx">Vote</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+    <span class="nx">choice</span><span class="o">:</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="s1">&#39;choice&#39;</span><span class="p">)</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that ember uses <code>DS.attr</code> for defining attributes, and <code>DS.hasMany</code>, <code>DS.belongsTo</code> methods for defining relationships.</p>
+
+
+
+
+<p>If you visit <a href="http://votefree.herokuapp.com/api/v1/polls/1">/api/v1/polls/1</a> in your local server, you will see the json response for the poll #1:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span><span class="s2">&quot;poll&quot;</span><span class="o">:</span><span class="p">{</span>
+  <span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;question&quot;</span><span class="o">:</span><span class="s2">&quot;What features would you like to see&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;choices&quot;</span><span class="o">:</span><span class="p">[{</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="o">:</span><span class="s2">&quot;Improved UI&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="o">:</span><span class="s2">&quot;New, fancy interface&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PollId&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;count&quot;</span><span class="o">:</span><span class="mi">0</span><span class="p">},{</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="o">:</span><span class="s2">&quot;Improved Performance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="o">:</span><span class="s2">&quot;Faster response times&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PollId&quot;</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;count&quot;</span><span class="o">:</span><span class="mi">0</span>
+    <span class="p">}]</span>
+<span class="p">}}</span></code></pre></div>
+
+
+
+
+<p>Notice <code>choices</code> attribute is embedded within the <code>poll</code> model. Normally ember-data expects this to be side loaded. So we will have to use <code>DS.EmbeddedRecordsMixin</code> to enable ember-data to parse our embedded response.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">PollSerializer</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">RESTSerializer</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="nx">DS</span><span class="p">.</span><span class="nx">EmbeddedRecordsMixin</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">attrs</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">choices</span><span class="o">:</span> <span class="p">{</span> <span class="nx">embedded</span><span class="o">:</span> <span class="s1">&#39;always&#39;</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<h2>Controllers in Ember</h2>
+
+
+
+
+<p>We will extend the default <code>IndexController</code> in our application. In ember, controllers communicate between the template and the model the extra properties defined in controller will be also available to the template. So ember controllers is in a way model decorators.</p>
+
+
+
+
+<h3>Controller Computed Properties (Model Decorators)</h3>
+
+
+
+
+<p><code>IndexController</code> extends <code>Ember.ObjectController</code> and decorates the <code>poll</code> model. We have various computed properties that will be available to our template, and they will be live bounded to our model.</p>
+
+
+
+
+<p><code>File scripts/controllers/index_controller.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">IndexController</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">ObjectController</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">resultsHidden</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+  
+  <span class="nx">pollChoices</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">);</span>
+    
+    <span class="kd">var</span> <span class="nx">totalVotes</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;totalVotes&#39;</span><span class="p">);</span>
+
+    <span class="nx">choices</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">votePercent</span> <span class="o">=</span> <span class="p">(</span><span class="nx">item</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="nx">totalVotes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">;</span>
+      <span class="nx">item</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;vote-percent&#39;</span><span class="p">,</span> <span class="nx">votePercent</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+      <span class="k">return</span> <span class="nx">item</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="nx">choices</span><span class="p">;</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">),</span>
+
+  <span class="nx">totalVotes</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">);</span>
+
+    <span class="kd">var</span> <span class="nx">totalVotes</span> <span class="o">=</span> <span class="nx">choices</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">prev</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">prev</span> <span class="o">+</span> <span class="nx">item</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">totalVotes</span><span class="p">;</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">),</span>
+
+  <span class="c1">// ...</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p><code>resultsHidden</code> property toggles between poll results and voting. <code>pollChoices</code> computed property computes the total percentage of votes for each choice. <code>totalVotes</code> computed property computes the total number of votes for a poll. Note that <code>.property('model.choices')</code> function that is appended to computed property methods. That binds the <code>model.choices</code> to our computed property so whenever a change occurs computed property updates live.</p>
+
+
+
+
+<h3>Controller Actions</h3>
+
+
+
+
+<p>Controller also communicates between template and model by means of actions. Remember we had three actions in our template, we handle those actions inside our controller.</p>
+
+
+
+
+<p><code>File: scripts/controllers/index_controller.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">actions</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">showResults</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">).</span><span class="nx">reload</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;resultsHidden&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+      <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+    <span class="p">},</span>
+    <span class="nx">hideResults</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;resultsHidden&#39;</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+    <span class="p">},</span>
+
+    <span class="nx">vote</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choiceId</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">choices</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;model.choices&#39;</span><span class="p">);</span>
+
+      <span class="kd">var</span> <span class="nx">vote</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">store</span><span class="p">.</span><span class="nx">createRecord</span><span class="p">(</span><span class="s1">&#39;vote&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">choice</span><span class="o">:</span> <span class="nx">choices</span><span class="p">.</span><span class="nx">findBy</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">choiceId</span><span class="p">)</span>
+      <span class="p">});</span>
+
+      <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+      <span class="nx">vote</span><span class="p">.</span><span class="nx">save</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s1">&#39;showResults&#39;</span><span class="p">);</span>
+      <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s1">&#39;showResults&#39;</span><span class="p">);</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">}</span></code></pre></div>
+
+
+
+
+<p><code>showResults</code> action toggles the <code>resultsHidden</code> property to false so the results are shown. Note that before showing the results, it reloads the model so we get the latest results. <code>hideResults</code> is the opposite, it goes back to the voting view. <code>vote</code> action is where the user votes. It takes a <code>choiceId</code> parameter that is the poll choice. We create a new <code>vote</code> record and save it.</p>
+
+
+
+
+<h2>Progress Bar Ember Component</h2>
+
+
+
+
+<p>Now let&rsquo;s see how we define an ember component. In our case a progress bar for displaying the percentage of votes for a poll choice.</p>
+
+
+
+
+<p>First we define a template for our ember component.</p>
+
+
+
+
+<p><code>File: templates/components/progress-bar.hbs</code></p>
+
+
+
+
+<div><script src='https://gist.github.com/248e17bdd390dbf5ec83.js'></script>
+<noscript><pre><code>&lt;div  &gt;
+  &lt;span&gt; %&lt;/span&gt;
+&lt;/div&gt;</code></pre></noscript></div>
+
+
+
+
+<p>Next we define the code for our ember component.</p>
+
+
+
+
+<p><code>File: scripts/components/progress-bar.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">App</span><span class="p">.</span><span class="nx">ProgressBarComponent</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="s1">&#39;progress-bar-type&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">barTypes</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="s1">&#39;progress-bar-danger&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;progress-bar-warning&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;progress-bar-info&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;progress-bar-success&#39;</span>
+    <span class="p">];</span>
+    
+    <span class="kd">var</span> <span class="nx">percent</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;percent&#39;</span><span class="p">),</span> <span class="mi">100</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">barType</span> <span class="o">=</span> <span class="nx">barTypes</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">percent</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">25</span><span class="p">)];</span>
+
+    <span class="k">return</span> <span class="nx">barType</span><span class="p">;</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s1">&#39;percent&#39;</span><span class="p">),</span>
+
+  <span class="s1">&#39;percent-style&#39;</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s1">&#39;width:&#39;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;percent&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span><span class="p">;</span>
+  <span class="p">}.</span><span class="nx">property</span><span class="p">(</span><span class="s1">&#39;percent&#39;</span><span class="p">)</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Here, we calculate <code>progress-bar-type</code> based on percentage, that will apply the bootstrap classes to the div and make the progress bar change colors with the percentage.</p>
+
+
+
+
+<h2>Setup the Ember Application</h2>
+
+
+
+
+<p>Finally we start our ember application and extend our ember application adapter.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">App</span> <span class="o">=</span> <span class="nx">Ember</span><span class="p">.</span><span class="nx">Application</span><span class="p">.</span><span class="nx">create</span><span class="p">();</span>
+
+<span class="nx">App</span><span class="p">.</span><span class="nx">ApplicationAdapter</span> <span class="o">=</span> <span class="nx">DS</span><span class="p">.</span><span class="nx">RESTAdapter</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">namespace</span><span class="o">:</span> <span class="s1">&#39;api/v1&#39;</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that extend the <code>DS.RESTAdapter</code> and we provide a <code>namespace</code> option to tell it that our REST API resides at <code>api/v1</code> namespace.</p>
+
+
+
+
+<h2>Development and Production</h2>
+
+
+
+
+<p>You can use <code>gulp test</code> to run your client side tests. generator-emberfs uses coffeescript for test code. You can use ember-qunit for unit testing and ember test-helpers for integration tests. It uses testem as the test runner. But, yet since we are using a server side REST API, You have to provide an <a href="https://github.com/airportyh/testem#api-proxy">API Proxy</a> configuration to testem to redirect your API calls to your server, and launch your server before running the tests.</p>
+
+
+
+
+<p>At this point we have finished the application and it&rsquo;s ready to ship. But first you need to build it using the command <code>gulp build</code>. This will compile all your assets, minify and optimize and concatenate your script and css files into the <code>public</code> directory. Now you can launch your server using the command: <code>node config/app</code>.</p>
+
+
+
+
+<h2>Conclusion</h2>
+
+
+
+
+<p>In this article we have built a front end for a REST API where users can vote for a poll and see the results of the poll using emberjs. We&rsquo;ve built a template in handlebars, setup the models in ember-data, extended an ember controller and an ember component for displaying progress bars.</p>
+
+
+
+
+<p>The full repository is at <a href="https://www.github.com/eguneys/voting_app">github</a>. A live example is available <a href="http://votefree.herokuapp.com">here</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Voting App: REST API /w Sequelize]]></title>
+    <link href="http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize/"/>
+    <updated>2014-09-17T12:15:56+03:00</updated>
+    <id>http://www.eguneys.com/blog/2014/09/17/building-a-voting-app-rest-api-slash-w-sequelize</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+
+
+
+<p><a href="http://sequelizejs.com">Sequelize</a> is an ORM (Object Relational Mapper) for NodeJS that provides easy access to various databases like MySQL, MariaDB, SQLite, or PostgreSQL.</p>
+
+
+
+
+<p>It has a nice website with helpful documentation and <a href="https://github.com/sequelize/sequelize/tree/master/examples">examples</a> to get started. Also there is an IRC channel #sequelizejs on Freenode.</p>
+
+
+
+
+<p>In this article we will build a voting application where users can vote for a poll and we will record their <code>IP</code> so they cannot vote twice. We will use <code>sequelize</code> to model our data and build a <code>REST API</code>. Later we will build the front end using <code>emberjs</code>.</p>
+
+
+
+
+<h2>Scaffold Voting Application</h2>
+
+
+
+
+<p>Since we are using <code>emberjs</code> we might use <code>ember-cli</code> for our project. But, yet recently I published a yeoman generator <a href="https://github.com/eguneys/generator-emberfs">generator-emberfs</a> for emberjs fullstack projects like the one we are building now. It does all the scaffolding for emberjs on the client side and expressjs on the server side. So we will use it for this article.</p>
+
+
+
+
+<p>You can install using the command:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">npm install -g generator-emberfs
+  yo emberfs</code></pre></div>
+
+
+
+
+<h3>Directory Structure</h3>
+
+
+
+
+<p>This is our directory structure for voting application. <code>config</code> folder contains the initial server code and configuration files. <code>app/models</code>, <code>app/routes</code> and <code>app/views</code> folders contain our server side models, routes, and views respectively. <code>db</code> folder is for the sqlite database file and code for our database seed.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|</span>-- app
+<span class="p">|</span>   <span class="p">|</span>-- models
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- index.js
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- poll.js
+<span class="p">|</span>   <span class="p">|</span>-- routes
+<span class="p">|</span>   <span class="p">|</span>-- <span class="sb">`</span>-- api.js
+<span class="p">|</span>   <span class="sb">`</span>-- views
+<span class="p">|</span>       <span class="sb">`</span>-- layouts
+<span class="p">|</span>-- config
+<span class="p">|</span>   <span class="p">|</span>-- app.js
+<span class="p">|</span>   <span class="sb">`</span>-- server.js
+<span class="p">|</span>
+<span class="sb">`</span>-- db
+    <span class="p">|</span>-- development.sqlite
+    <span class="sb">`</span>-- seed.js</code></pre></div>
+
+
+
+
+<p>We will define only routes for the REST API so we won&rsquo;t mention about the <code>app/views</code> folder here.</p>
+
+
+
+
+<p>Note that this folder structure is boilerplate for the <code>generator-emberfs</code>. So you won&rsquo;t need to do the tedious work if you use it.</p>
+
+
+
+
+<h2>Models in Sequelize</h2>
+
+
+
+
+<p>This is our model diagram. <em>Poll</em> is a <em>question</em> and has many <em>Choices</em>. <em>Choice</em> is a poll choice with a <em>text</em> and <em>description</em> and has many <em>Votes</em>. <em>Vote</em> has an <em>ip</em> that identifies the voter, so we can make sure one ip can vote only once.</p>
+
+
+
+
+<p><a href="vote_diagram.png">image</a></p>
+
+
+
+
+<p>All our models are in file <code>app/models/poll.js</code>. Later we will import them.</p>
+
+
+
+
+<p><strong>Vote</strong> model is simple, just a single field <code>ip</code> and has no relationships. It also has some helpers methods which I will mention later.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">Vote</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;Vote&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">ip</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+    <span class="c1">// ... define model fields here</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// define relationships here</span>
+      <span class="p">}</span>
+        <span class="c1">// ... define class methods here</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p><strong>Choice</strong> model has two fields, <code>text</code> and <code>description</code>, and has one-to-many relationship with the <em>Vote</em> model. We define the relationships in a class method named <em>associate</em>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">Choice</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;Choice&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">text</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span><span class="p">,</span>
+    <span class="nx">description</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">Choice</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">Vote</span><span class="p">,</span> <span class="p">{</span> <span class="nx">as</span> <span class="o">:</span> <span class="s1">&#39;votes&#39;</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p><strong>Poll</strong> model has one field <em>question</em>, and has one-to-many relationship with the <em>Choice</em> model.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">Poll</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;Poll&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="nx">classMethods</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">associate</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">models</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">Poll</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">Choice</span><span class="p">,</span> <span class="p">{</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;choices&#39;</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<h3>Import all models in Sequelize</h3>
+
+
+
+
+<p>Now we have defined our models, we need to import them with sequelize. We will do that in file <code>app/models/index.js</code>.</p>
+
+
+
+
+<p>In our example we have only one file defining our models namely <code>app/models/poll.js</code>. But we can have more than that, and we will import all the files in <code>app/models</code> folder.</p>
+
+
+
+
+<p>First let&rsquo;s require our dependencies, and initialize Sequelize. <code>votes-app-db</code> is the name of our database.</p>
+
+
+
+
+<p>We are using <code>sqlite</code> for the database and <code>./db/development.sqlite</code> file for the database. <code>sqlite</code> is a zero-configuration, serverless database. It works directly from the database files on disk.</p>
+
+
+
+
+<p><code>File: app/models/index.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">),</span>
+  <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">),</span>
+  <span class="nx">lodash</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lodash&#39;</span><span class="p">),</span>
+  <span class="nx">Sequelize</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;sequelize&#39;</span><span class="p">),</span>
+  <span class="nx">sequelize</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="p">{};</span>
+
+<span class="nx">sequelize</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Sequelize</span><span class="p">(</span><span class="s1">&#39;votes-app-db&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">dialect</span><span class="o">:</span> <span class="s1">&#39;sqlite&#39;</span><span class="p">,</span>
+  <span class="nx">storage</span><span class="o">:</span> <span class="s1">&#39;./db/development.sqlite&#39;</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Before we import the models, let&rsquo;s see how we export our models in <code>app/models/poll.js</code>.</p>
+
+
+
+
+<p><code>File: app/models/poll.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">Sequelize</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;sequelize&#39;</span><span class="p">);</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">sequelize</span><span class="p">,</span> <span class="nx">DataTypes</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// I omit the definitions.</span>
+  <span class="kd">var</span> <span class="nx">Vote</span><span class="p">,</span> <span class="nx">Poll</span><span class="p">,</span> <span class="nx">Choice</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="p">[</span><span class="nx">Vote</span><span class="p">,</span> <span class="nx">Poll</span><span class="p">.</span> <span class="nx">Choice</span><span class="p">];</span>
+<span class="p">};</span></code></pre></div>
+
+
+
+
+<p>We export an array of our models. Now let&rsquo;s import each file in <code>app/models</code> to sequelize.</p>
+
+
+
+
+<p><code>File: app/models/index.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">fs</span><span class="p">.</span><span class="nx">readdirSync</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">file</span> <span class="o">!==</span> <span class="s1">&#39;index.js&#39;</span><span class="p">);</span>
+  <span class="p">})</span>
+  <span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">model</span> <span class="o">=</span> <span class="nx">sequelize</span><span class="p">.</span><span class="kr">import</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="nx">file</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">model</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">model</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">m</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">[</span><span class="nx">m</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">m</span><span class="p">;</span>
+      <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">db</span><span class="p">[</span><span class="nx">model</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">model</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>We filter out the <code>index.js</code> and import every file to sequelize. Later we keep references to our models in <code>db</code> object. Note that our model files can both return an array or a single object, that&rsquo;s what the <em>if</em> condition is checking for.</p>
+
+
+
+
+<p>Finally we call the <code>associate</code> class method for each model that will define the relationships between models. Then we export all the models (<code>db</code> object) along with sequelize.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">db</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">modelName</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;associate&#39;</span> <span class="k">in</span> <span class="nx">db</span><span class="p">[</span><span class="nx">modelName</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">[</span><span class="nx">modelName</span><span class="p">].</span><span class="nx">associate</span><span class="p">(</span><span class="nx">db</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">lodash</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">sequelize</span><span class="o">:</span> <span class="nx">sequelize</span><span class="p">,</span>
+  <span class="nx">Sequelize</span><span class="o">:</span> <span class="nx">Sequelize</span>
+<span class="p">},</span> <span class="nx">db</span><span class="p">);</span></code></pre></div>
+
+
+
+
+<h3>Seed for the Database</h3>
+
+
+
+
+<p>Next, we seed the database a sample poll with two choices.</p>
+
+
+
+
+<p><code>File: db/seed.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+    <span class="nx">question</span><span class="o">:</span> <span class="s1">&#39;What features would you like to see&#39;</span>
+  <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">poll</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Choice</span><span class="p">.</span><span class="nx">bulkCreate</span><span class="p">([{</span>
+      <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nx">text</span><span class="o">:</span> <span class="s1">&#39;Improved UI&#39;</span><span class="p">,</span>
+      <span class="nx">description</span><span class="o">:</span> <span class="s1">&#39;New, fancy interface&#39;</span><span class="p">,</span>
+      <span class="nx">PollId</span><span class="o">:</span> <span class="nx">poll</span><span class="p">.</span><span class="nx">id</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">id</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+      <span class="nx">text</span><span class="o">:</span> <span class="s1">&#39;Improved Performance&#39;</span><span class="p">,</span>
+      <span class="nx">description</span><span class="o">:</span> <span class="s1">&#39;Faster response times&#39;</span><span class="p">,</span>
+      <span class="nx">PollId</span><span class="o">:</span> <span class="nx">poll</span><span class="p">.</span><span class="nx">id</span>
+    <span class="p">}]);</span>
+  <span class="p">});</span>
+
+<span class="p">};</span></code></pre></div>
+
+
+
+
+<p>Note that each model has a <code>create</code> and <code>bulkCreate</code> function. The difference is <code>create</code> takes a single object and <code>bulkCreate</code> takes an array of objects.</p>
+
+
+
+
+<p>One final thing is the <em>choice</em> model instances has an extra attribute, <em>PollId</em>, that is the foreign key referencing the <em>Poll</em> model.</p>
+
+
+
+
+<h3>Helper methods for Models</h3>
+
+
+
+
+<p>We will define two helper methods for the <em>Vote</em> model. They are both defined under the <em>classMethods</em> object (near to <em>associate</em> method).</p>
+
+
+
+
+<p><strong>findCount</strong> method takes a <em>choiceId</em> and finds the number of votes for that choice.</p>
+
+
+
+
+<p><code>File: app/models/poll.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">findCount</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choiceId</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Vote</span><span class="p">.</span><span class="nx">count</span><span class="p">({</span>
+      <span class="nx">where</span><span class="o">:</span> <span class="p">{</span> <span class="s1">&#39;ChoiceId&#39;</span><span class="o">:</span> <span class="nx">choiceId</span><span class="p">}</span>
+    <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">count</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span></code></pre></div>
+
+
+
+
+<p><strong>addVote</strong> method takes an <em>ip</em> and a <em>choice</em> and creates a new vote. The trick here is that we have to make sure the given ip doesn&rsquo;t vote twice for the same poll. So we need a nifty sql statement to &ldquo;select all the votes for the poll that the given choice belongs to and that is the same ip as the given ip&rdquo;. This statement will return a single vote if the given ip has voted for the same poll or null if it hasn&rsquo;t.</p>
+
+
+
+
+<p><code>File: app/models/poll.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">addVote</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">choice</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// sequelize translation of the sql command:</span>
+    <span class="c1">//</span>
+    <span class="c1">// select * from votes, choices, polls where</span>
+    <span class="c1">// votes.choiceId == choices.id and choices.pollId ==</span>
+    <span class="c1">// polls.id and choices.id == choice polls.id in</span>
+    <span class="c1">// (select pollId from votes, choices where</span>
+    <span class="c1">// votes.choiceId == choices.id and votes.ip == ip)</span>
+                
+    <span class="nx">Poll</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span> <span class="nx">where</span><span class="o">:</span> <span class="nx">Sequelize</span><span class="p">.</span><span class="nx">and</span><span class="p">(</span>
+      <span class="p">{</span>
+        <span class="s1">&#39;choices.id&#39;</span><span class="o">:</span> <span class="nx">choice</span>
+      <span class="p">},</span>
+      <span class="p">{</span><span class="nx">id</span><span class="o">:</span> 
+        <span class="p">{</span> <span class="k">in</span><span class="o">:</span>
+          <span class="nx">Sequelize</span><span class="p">.</span><span class="nx">literal</span><span class="p">(</span><span class="s1">&#39;select &quot;Choices&quot;.&quot;PollId&quot; from &quot;Votes&quot;, &quot;Choices&quot; where &quot;Votes&quot;.&quot;ChoiceId&quot; = &quot;Choices&quot;.&quot;id&quot; and &quot;Votes&quot;.&quot;ip&quot; = \&#39;&#39;</span> <span class="o">+</span> <span class="nx">ip</span> <span class="o">+</span> <span class="s1">&#39;\&#39;&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+      <span class="p">}),</span>
+        <span class="nx">include</span><span class="o">:</span> <span class="p">[</span> <span class="p">{</span>
+          <span class="nx">model</span><span class="o">:</span> <span class="nx">Choice</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;choices&#39;</span><span class="p">,</span>
+          <span class="nx">include</span><span class="o">:</span> <span class="p">[{</span> <span class="nx">model</span><span class="o">:</span> <span class="nx">Vote</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;votes&#39;</span> <span class="p">}]}]</span>
+      <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">votes</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">votes</span> <span class="o">||</span> <span class="nx">votes</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">Vote</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+            <span class="nx">ip</span><span class="o">:</span> <span class="nx">ip</span><span class="p">,</span>
+            <span class="nx">ChoiceId</span><span class="o">:</span> <span class="nx">choice</span>
+          <span class="p">})</span>
+            <span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">vote</span><span class="p">);</span>
+            <span class="p">});</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">callback</span><span class="p">(</span><span class="s2">&quot;Vote already exists&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">});</span>
+  <span class="p">},</span></code></pre></div>
+
+
+
+
+<p>I am sure there is a better way to build this statement in sequelize, but this works too. Note that we make use of <code>Sequelize.literal</code> method that interprets the raw sql command.</p>
+
+
+
+
+<p>Finally upon success, if the vote already exists, we give error, otherwise we create a new vote which builds and saves the vote to the database.</p>
+
+
+
+
+<h2>Routes for Express 4</h2>
+
+
+
+
+<p>Routing in Express 4 is modular and mountable. A <code>Router</code> instance is a complete middleware. But, yet I won&rsquo;t get into detail how to use express routers in this article. For more information check out the express <a href="http://expressjs.com">docs</a> and the <a href="http://expressjs.com/migrating-4.html#routing">migration guide</a>.</p>
+
+
+
+
+<p>All our API routes are in file <code>app/routes/api.js</code>.</p>
+
+
+
+
+<p><code>/polls</code> route lists all the available polls.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/polls&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span>
+      <span class="c1">// you can include choices for the poll, or not.</span>
+      <span class="c1">//include: [{ model: db.Choice, as: &#39;choices&#39; }]</span>
+    <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">polls</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span>
+        <span class="nx">polls</span><span class="o">:</span> <span class="nx">polls</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that <code>include</code> option enables us to embed the <em>choices</em> for the poll. In our case we opt not to.</p>
+
+
+
+
+<p><code>/polls/:id</code> route gets a single poll with a given id. This time we <em>include</em> the choices for the poll as well. The trick here is for each choice we find the number of votes for that choice, and include the count in the choice model using the <code>setDataValue</code> method.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/polls/:id&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Poll</span><span class="p">.</span><span class="nx">find</span><span class="p">({</span>
+      <span class="nx">where</span><span class="o">:</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span> <span class="p">},</span>
+      <span class="nx">include</span><span class="o">:</span> <span class="p">[{</span><span class="nx">model</span><span class="o">:</span> <span class="nx">db</span><span class="p">.</span><span class="nx">Choice</span><span class="p">,</span> <span class="nx">as</span><span class="o">:</span> <span class="s1">&#39;choices&#39;</span> <span class="p">}]</span>
+    <span class="p">}).</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">poll</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">async</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">poll</span><span class="p">.</span><span class="nx">choices</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">choice</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">findCount</span><span class="p">(</span><span class="nx">choice</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">choice</span><span class="p">.</span><span class="nx">setDataValue</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="nx">count</span><span class="p">);</span>
+          <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">choice</span><span class="p">);</span>
+        <span class="p">});</span>
+      <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">poll</span><span class="p">.</span><span class="nx">setDataValue</span><span class="p">(</span><span class="s1">&#39;choices&#39;</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span>
+          <span class="nx">poll</span><span class="o">:</span> <span class="nx">poll</span>
+        <span class="p">});</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that we use <em>async</em> library to map <em>poll.choices</em> and add the vote count for each choice. Later we use <code>setDataValue</code> method for the poll model to set the <em>choices</em> to the map results.</p>
+
+
+
+
+<p>We post to <code>/votes</code> route to make a vote. One ip can vote for a poll only once, thanks to our <em>addVote</em> helper method.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/votes&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">ip</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="s1">&#39;x-forwarded-for&#39;</span><span class="p">]</span> <span class="o">||</span> <span class="nx">req</span><span class="p">.</span><span class="nx">connection</span><span class="p">.</span><span class="nx">remoteAddress</span><span class="p">;</span>
+    <span class="c1">// randomize the ip to test your app</span>
+    <span class="c1">//ip = Math.random();</span>
+        
+    <span class="kd">var</span> <span class="nx">choice</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">vote</span><span class="p">.</span><span class="nx">choice</span><span class="p">;</span>
+        
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">addVote</span><span class="p">(</span><span class="nx">ip</span><span class="p">,</span> <span class="nx">choice</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">vote</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">vote</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that we use <code>x-forwarded-for</code> header or the <code>req.connection.remoteAddress</code> to get the ip. If you want to test the application so you can have many votes, randomize the ip with <code>Math.random</code>.</p>
+
+
+
+
+<p>Finally <code>/votes/:choiceId</code> route will return the number of votes for a given choice.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/votes/:choiceId&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">choice</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">choiceId</span><span class="p">;</span>
+
+    <span class="nx">db</span><span class="p">.</span><span class="nx">Vote</span><span class="p">.</span><span class="nx">findCount</span><span class="p">(</span><span class="nx">choice</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">({</span> <span class="nx">vote</span><span class="o">:</span> <span class="nx">count</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<h2>Setup the Server</h2>
+
+
+
+
+<p>Finally we start sequelize, seed the database, and fire up the express server.</p>
+
+
+
+
+<p><code>File: app/config/app.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./server&#39;</span><span class="p">),</span>
+  <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../app/models&#39;</span><span class="p">);</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">sequelize</span>
+  <span class="p">.</span><span class="nx">sync</span><span class="p">({</span> <span class="nx">force</span><span class="o">:</span> <span class="kc">true</span><span class="p">})</span>
+  <span class="p">.</span><span class="nx">complete</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">throw</span> <span class="nx">err</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="c1">// seed</span>
+      <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../db/seed&#39;</span><span class="p">)(</span><span class="nx">db</span><span class="p">);</span>
+      
+      <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">),</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;express listening on &#39;</span> <span class="o">+</span> <span class="nx">app</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">));</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that we require <code>../app/models</code> that exports all the <em>models</em> and <em>sequelize</em> as the <em>db</em> object. Also we require <code>./server</code> that exports the express application. I won&rsquo;t mention about configuring and setting up the express server, it&rsquo;s simple enough and you should do it however you like. For more details check out the full repository at <a href="https://www.github.com/eguneys/voting_app">github</a>.</p>
+
+
+
+
+<h2>Conclusion</h2>
+
+
+
+
+<p>In this article we have built a <code>REST API</code> using <code>sequelize</code> for voting polls. We&rsquo;ve setup models in <code>sequelize</code> provided seed for the database, used query methods for the models, and setup the API routes for the <code>express</code> server. Next up we will build the front end using <code>emberjs</code>.</p>
+
+
+
+
+<p>The full repository is at <a href="https://www.github.com/eguneys/voting_app">github</a>.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Let's Build a Yeoman Generator 2]]></title>
+    <link href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-2/"/>
+    <updated>2014-09-17T12:14:58+03:00</updated>
+    <id>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-2</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+
+
+
+<p>In the previous <a href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/">article</a> we built a Phaser project template, that used gulp as a build tool. In this article we will build a yeoman generator, for scaffolding, generating boilerplate from that template. We will also use mocha to write tests and see how to do test driven development. Finally we will publish it to npm.</p>
+
+
+
+
+<h2>Initialize Yeoman Generator</h2>
+
+
+
+
+<p>A yeoman generator is an npm package, that runs on node environment. As we write our generator we will test it with mocha.</p>
+
+
+
+
+<p>First install mocha with npm:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install -g mocha</code></pre></div>
+
+
+
+
+<p>Next we initialize npm, and create our <code>package.json</code> file.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm init</code></pre></div>
+
+
+
+
+<p>Next, we install our dependencies:</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install --save yeoman-generator yosay chalk chai fs-extra gulp mocha</code></pre></div>
+
+
+
+
+<p>We also need <code>yo</code> as a <em>peerDependency</em>, you can see the example <a href="https://github.com/eguneys/generator-phaserjs/blob/master/package.json"><code>package.json</code></a> as a reference, or just use it as is.</p>
+
+
+
+
+<p>Next I&rsquo;ve configured some utility modules, that are going to make our life easier, grab them as we will later use them. <a href="https://github.com/eguneys/generator-phaserjs/blob/master/util.js"><code>util.js</code></a>, and <a href="https://github.com/eguneys/generator-phaserjs/blob/master/test-util.js"><code>test-util.js</code></a>, place them in the root directory, next to <code>package.json</code>.</p>
+
+
+
+
+<h3>Directory Structure</h3>
+
+
+
+
+<p>Here&rsquo;s the standard directory structure for yeoman generators.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|</span>-- LICENSE
+<span class="p">|</span>-- README.md
+<span class="p">|</span>-- generators
+<span class="p">|</span>   <span class="p">|</span>-- app
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- templates
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- index.js
+<span class="p">|</span>   <span class="p">|</span>-- prefab
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- templates
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- index.js
+<span class="p">|</span>   <span class="sb">`</span>-- state
+<span class="p">|</span>       <span class="p">|</span>-- templates
+<span class="p">|</span>       <span class="sb">`</span>-- index.js
+<span class="p">|</span>-- package.json
+<span class="p">|</span>-- <span class="nb">test</span>
+<span class="p">|</span>   <span class="p">|</span>-- fixtures
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- app.js
+<span class="p">|</span>   <span class="p">|</span>   <span class="p">|</span>-- bower.json
+<span class="p">|</span>   <span class="p">|</span>   <span class="sb">`</span>-- package.json
+<span class="p">|</span>   <span class="p">|</span>-- <span class="nb">test</span>-creation.js
+<span class="p">|</span>   <span class="p">|</span>-- <span class="nb">test</span>-load.js
+<span class="p">|</span>   <span class="p">|</span>-- test_prefab.js
+<span class="p">|</span>   <span class="sb">`</span>-- test_state.js
+<span class="p">|</span>-- <span class="nb">test</span>-util.js
+<span class="sb">`</span>-- util.js</code></pre></div>
+
+
+
+
+<p>As you can see, besides <code>LICENSE</code>, <code>README.md</code>, <code>package.json</code> and utility files, we have two folders <code>generators</code> and <code>test</code>.</p>
+
+
+
+
+<p><code>generators</code> folder holds each sub-generator. Each folder is the same name as the sub-generator name. In our case we have a default generator <code>app</code>, that is called with command <code>yo name</code>, and two extra sub-generators <code>prefab</code> and <code>state</code>. Each sub-generator has an <code>index.js</code> file, that contains the entry point, and a <code>templates</code> folder that contains the template files for the boilerplate. Template files will use <code>underscore</code> templating library.</p>
+
+
+
+
+<p><code>test</code> folder holds the tests for the yeoman generator. <code>test/fixtures</code> folder holds fixture files that we need for some tests.</p>
+
+
+
+
+<p>For now, create two folders <code>generators</code> and <code>test</code>, next we will write tests, and later write code to pass them.</p>
+
+
+
+
+<h2>Write Failing Test, Code, Pass Test</h2>
+
+
+
+
+<p>That&rsquo;s how we develop our generator, using test driven development. Before we start, I want to tell you that we will write our tests in coffeescript. I never liked coffescript, until I found out the perfect opportunity to learn it, that is because it is more convenient for nested test code, you won&rsquo;t have to deal with nested brackets. Now let&rsquo;s write our first test.</p>
+
+
+
+
+<h3>Default Generator <code>app</code></h3>
+
+
+
+
+<p>Default generator used when you call <code>yo name</code>. It is the <code>app</code> generator, and it resides in the <code>app</code> folder.</p>
+
+
+
+
+<p><code>File: test/test-load.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nv">assert = </span><span class="nx">require</span> <span class="s">&#39;assert&#39;</span>
+
+<span class="nx">describe</span> <span class="s">&#39;phaserjs generator&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+  <span class="nx">it</span> <span class="s">&#39;can be imported&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+    <span class="nv">app = </span><span class="nx">require</span> <span class="s">&#39;../generators/app&#39;</span>
+    <span class="nx">assert</span> <span class="nx">app</span> <span class="o">!=</span> <span class="kc">undefined</span></code></pre></div>
+
+
+
+
+<p>Here we use BDD interface that mocha provides, that is, <code>describe</code>, and <code>it</code> keywords. Mocha allows you to use any assertion library, we use <code>assert</code> module. <code>describe</code> defines a test suite, <code>it</code> defines a test case.</p>
+
+
+
+
+<p>In our case we have a <code>phaserjs generator</code> test suite with a test that says <code>it can be imported</code>. In the test, we simply require our first generator, that is the main generator <code>../generators/app</code>, and assert that it is defined.</p>
+
+
+
+
+<p>Now when you go to the root directory and run your tests with command <code>mocha</code>, it will fail, because we don&rsquo;t have an <code>app generator</code> yet, so let&rsquo;s code our first generator.</p>
+
+
+
+
+<h3>Extending generator</h3>
+
+
+
+
+<p>Yeoman offers two base generators <code>Base</code> and <code>NamedBase</code> that we can extend from. For the default <code>app</code> generator we will extend <code>Base</code> generator.</p>
+
+
+
+
+<p><code>File: generators/app/index.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">chalk</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;chalk&#39;</span><span class="p">);</span>
+
+
+<span class="c1">// Two utility modules that I provided before</span>
+<span class="kd">var</span> <span class="nx">util</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;util&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">genUtils</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../../util.js&#39;</span><span class="p">);</span>
+
+<span class="c1">// modules yeoman provides</span>
+<span class="kd">var</span> <span class="nx">yeoman</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;yeoman-generator&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">yosay</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;yosay&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">PhaserGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">Base</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+<span class="p">});</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">PhaserGenerator</span><span class="p">;</span></code></pre></div>
+
+
+
+
+<p>Here we extended the <code>Base</code> generator, and exported it as a module. Now the tests will pass.</p>
+
+
+
+
+<p>But the generator doesn&rsquo;t do anything yet, now let&rsquo;s write some tests that asserts that our default generator actually creates some boilerplate.</p>
+
+
+
+
+<p><code>File: test/test-creation.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nv">path = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
+<span class="nv">fs = </span><span class="nx">require</span> <span class="s">&#39;fs-extra&#39;</span>
+<span class="nv">exec = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;child_process&#39;</span><span class="p">).</span><span class="nx">exec</span>
+
+<span class="nv">helpers = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;yeoman-generator&#39;</span><span class="p">).</span><span class="nx">test</span>
+<span class="nv">expect = </span><span class="nx">require</span> <span class="p">(</span><span class="s">&#39;chai&#39;</span><span class="p">).</span><span class="nx">expect</span>
+
+<span class="nx">describe</span> <span class="s">&#39;phaserjs generator&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+
+  <span class="nx">beforeEach</span> <span class="nf">(done) -&gt;</span>
+    <span class="vi">@app = </span><span class="nx">helpers</span>
+      <span class="p">.</span><span class="nx">run</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;../generators/app&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">inDir</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;.tmp&#39;</span><span class="p">),</span> <span class="nf">(dir) -&gt;</span>
+      
+        <span class="nx">fs</span><span class="p">.</span><span class="nx">symlinkSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;fixtures/node_modules&#39;</span><span class="p">),</span>
+            <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;node_modules&#39;</span><span class="p">),</span> <span class="s">&#39;dir&#39;</span>
+
+        <span class="nx">fs</span><span class="p">.</span><span class="nx">mkdirpSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;app/&#39;</span><span class="p">)</span>
+
+        <span class="o">//</span> <span class="nx">bower_components</span>
+        <span class="nx">fs</span><span class="p">.</span><span class="nx">symlinkSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;fixtures/bower_components&#39;</span><span class="p">),</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;app/bower_components&#39;</span><span class="p">),</span> <span class="s">&#39;dir&#39;</span>
+
+        <span class="nx">done</span><span class="p">()</span>
+
+  <span class="nx">describe</span> <span class="s">&#39;running app&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+    <span class="nx">describe</span> <span class="s">&#39;with default options&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+      <span class="nx">it</span> <span class="s">&#39;should pass jshint&#39;</span><span class="p">,</span> <span class="nf">(done) -&gt;</span>
+        <span class="nx">@app</span><span class="p">.</span><span class="nx">withPrompt</span><span class="p">({})</span>
+            <span class="p">.</span><span class="nx">on</span> <span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+              <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;running jshint&#39;</span>
+              <span class="nx">exec</span> <span class="s">&#39;gulp jshint&#39;</span><span class="p">,</span> <span class="nf">(error, stdout, stderr) -&gt;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+                  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;Error: &#39;</span> <span class="o">+</span> <span class="nx">error</span>
+                  
+                <span class="nx">expect</span><span class="p">(</span><span class="nx">stdout</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">contain</span> <span class="s">&#39;Finished \&#39;jshint\&#39;&#39;</span>
+                <span class="nx">expect</span><span class="p">(</span><span class="nx">stdout</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="o">not</span><span class="p">.</span><span class="nx">contain</span> <span class="s">&#39;problems&#39;</span>
+                <span class="nx">done</span><span class="p">();</span></code></pre></div>
+
+
+
+
+<p>First, we require <code>helpers</code> module, that yeoman provides as test helpers, and <code>chai</code> assertion library. Then we have a <code>beforeEach</code> block that runs before every test within the test suite. Before every test we have to run the generator, and then run our tests against the end results.</p>
+
+
+
+
+<p>The way we run the generator is simple, thanks to <code>helpers</code> module. we provide our generator path to the <code>helpers.run</code> method. This will return a <code>RunContext</code> on which you can later setup directory, mock prompt, options etc.</p>
+
+
+
+
+<p>After running our generator with <code>helpers.run</code> method, we use <code>inDir</code> method to setup the directory to run the generator from. We pass it a <code>.tmp</code> directory. The second parameter is a callback we use to setup the <code>.tmp</code> directory. In our case we symlink <code>node_modules</code> and <code>bower_components</code> we had in our <code>test/fixtures</code> folder beforehand, so we don&rsquo;t have to run <code>npm install</code> for our test scenario each time we test our generator.</p>
+
+
+
+
+<p>The test will run <code>gulp jshint</code> and expect that it will finish with no problems.</p>
+
+
+
+
+<p>To pass the test we need to generate the boilerplate Phaser project. Let&rsquo;s see how we do that next.</p>
+
+
+
+
+<p><code>File: generators/app/index.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">PhaserGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">Base</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+  <span class="nx">info</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">yeoman</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">chalk</span><span class="p">.</span><span class="nx">yellow</span><span class="p">(</span>
+      <span class="s1">&#39;Out of the box I create a Phaser app with RequireJS,\n&#39;</span> <span class="o">+</span>
+      <span class="s1">&#39;and gulp to build your app.\n&#39;</span>
+    <span class="p">));</span>
+  <span class="p">},</span>
+
+  <span class="nx">generateBasic</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        
+    <span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;gitignore&#39;</span><span class="p">,</span> <span class="s1">&#39;.gitignore&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;jshintrc&#39;</span><span class="p">,</span> <span class="s1">&#39;.jshintrc&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;bowerrc&#39;</span><span class="p">,</span> <span class="s1">&#39;.bowerrc&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;_package.json&#39;</span><span class="p">,</span> <span class="s1">&#39;package.json&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">copy</span><span class="p">(</span><span class="s1">&#39;_bower.json&#39;</span><span class="p">,</span> <span class="s1">&#39;bower.json&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">&#39;_gulpfile.js&#39;</span><span class="p">,</span> <span class="s1">&#39;gulpfile.js&#39;</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="nx">generateClient</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">sourceRoot</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">));</span>
+    
+    <span class="nx">genUtils</span><span class="p">.</span><span class="nx">processDirectory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;app&#39;</span><span class="p">,</span> <span class="s1">&#39;app&#39;</span><span class="p">);</span>
+    <span class="nx">genUtils</span><span class="p">.</span><span class="nx">processDirectory</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">);</span>
+  <span class="p">},</span>
+    
+  <span class="nx">end</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">installDependencies</span><span class="p">({</span>
+      <span class="nx">skipInstall</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">[</span><span class="s1">&#39;skip-install&#39;</span><span class="p">]</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Every method we added is called in sequence. First in the <code>info</code> method we display some ASCII art and info about our generator. Next in the <code>generateBasic</code> and <code>generateClient</code> methods we setup the boilerplate. And finally in the <code>end</code> method we run <code>installDependencies</code> method that runs <code>bower install &amp;&amp; npm install</code> for us.</p>
+
+
+
+
+<p>Note that there are three helper methods for copying files to setup the boilerplate. <code>this.copy</code> will simply copy the file from <code>generators/app/templates</code> folder to the users project folder, <code>this.template</code> will run the template engine, underscore, and copy the file. Finally we use <code>genUtils.processDirectory</code> that I added as a helper method that copies whole directories.</p>
+
+
+
+
+<p>After coding our generator, we actually need template files to copy. They live in the <code>generators/app/templates</code> folder. Let&rsquo;s take a look at <code>_package.json</code> template and how we use underscore to customize the boilerplate files.</p>
+
+
+
+
+<p><code>File: generators/app/templates/_package.json</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;&lt;%= _.slugify(name) %&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="s2">&quot;0.0.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;Phaser template with requirejs and gulp&quot;</span><span class="p">,</span>
+  <span class="c1">// ... rest is omitted</span>
+<span class="p">}</span></code></pre></div>
+
+
+
+
+<p>Here we use underscore templating, and helpers function to customize the name of the package. <code>name</code> variable is the name of the users project.</p>
+
+
+
+
+<p>If you run the tests again, hopefully it will pass this time.</p>
+
+
+
+
+<h3>Sub Generator <code>state</code></h3>
+
+
+
+
+<p>Sub generator <code>state</code> used when you call <code>yo name:state</code>. It is the <code>state</code> generator, and it resides in the <code>state</code> folder.</p>
+
+
+
+
+<p><code>File: test/test_prefab.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-coffee" data-lang="coffee"><span class="nx">describe</span><span class="p">(</span><span class="s">&#39;phaserjs:prefab generator&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+  <span class="nv">defaultArgs = </span><span class="p">[</span><span class="s">&#39;TestPrefab&#39;</span><span class="p">]</span>
+
+  <span class="nx">beforeEach</span> <span class="nf">-&gt;</span>
+    <span class="vi">@app_prefab = </span><span class="nx">helpers</span>
+      <span class="p">.</span><span class="nx">run</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;../generators/prefab&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">inDir</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s">&#39;.tmp&#39;</span><span class="p">)</span>
+
+  <span class="nx">describe</span> <span class="s">&#39;with default options&#39;</span> <span class="nf">-&gt;</span>
+    <span class="nx">it</span> <span class="s">&#39;should generate expected files&#39;</span><span class="p">,</span> <span class="nf">(done) -&gt;</span>
+      <span class="nx">@app_prefab</span>
+        <span class="p">.</span><span class="nx">withArguments</span> <span class="p">{}</span>
+        <span class="p">.</span><span class="nx">on</span> <span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+          <span class="nx">assert</span><span class="p">.</span><span class="nx">file</span> <span class="p">[</span><span class="s">&#39;app/scripts/prefabs/testprefab.js&#39;</span><span class="p">]</span>
+
+          <span class="nx">assert</span><span class="p">.</span><span class="nx">fileContent</span> <span class="s">&#39;app/scripts/prefabs/testprefab.js&#39;</span><span class="p">,</span> <span class="o">/</span> <span class="nx">function</span> <span class="nx">Testprefab</span><span class="err">\</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="err">\</span><span class="p">)</span> <span class="err">\</span><span class="p">{</span><span class="err">\</span><span class="nx">n</span><span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span><span class="o">+</span><span class="nx">Phaser</span><span class="err">\</span><span class="p">.</span><span class="nx">Sprite</span><span class="err">\</span><span class="p">.</span><span class="nx">call</span><span class="err">\</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">game</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="err">\</span><span class="s">&#39;atlasname\&#39;, 0/</span>
+
+<span class="s">          assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="o">/</span><span class="nx">testprefab</span><span class="p">.</span><span class="nx">js</span><span class="s">&#39;, /Testprefab\.prototype = Object\.create\(Phaser\.Sprite\.prototype\)\;\n/</span>
+<span class="s">          </span>
+<span class="s">          assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="o">/</span><span class="nx">testprefab</span><span class="p">.</span><span class="nx">js</span><span class="s">&#39;, /Testprefab\.prototype.constructor = Testprefab;\n/</span>
+
+<span class="s">          done()</span>
+
+<span class="s">  describe &#39;</span><span class="nx">with</span> <span class="o">--</span><span class="nx">group</span> <span class="nx">option</span><span class="s">&#39;, -&gt;</span>
+<span class="s">    it &#39;</span><span class="nx">should</span> <span class="nx">generate</span> <span class="nx">expected</span> <span class="nx">files</span><span class="s">&#39;, (done) -&gt;</span>
+<span class="s">      @app_prefab.withOptions {&#39;</span><span class="nx">group</span><span class="s">&#39;:true}</span>
+<span class="s">                 .on &#39;</span><span class="nx">end</span><span class="s">&#39;, -&gt;</span>
+
+<span class="s">                   assert.fileContent &#39;</span><span class="nx">app</span><span class="o">/</span><span class="nx">scripts</span><span class="o">/</span><span class="nx">prefabs</span><span class="sr">/testprefab.js&#39;, /</span> <span class="nx">function</span> <span class="nx">Testprefab</span><span class="err">\</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">parent</span><span class="err">\</span><span class="p">)</span> <span class="err">\</span><span class="p">{</span><span class="err">\</span><span class="nx">n</span><span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span><span class="o">+</span><span class="nx">Phaser</span><span class="err">\</span><span class="p">.</span><span class="nx">Group</span><span class="err">\</span><span class="p">.</span><span class="nx">call</span><span class="err">\</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">game</span><span class="p">,</span> <span class="nx">parent</span><span class="err">\</span><span class="p">)</span><span class="err">\</span><span class="p">;</span><span class="err">\</span><span class="nx">n</span><span class="o">/</span>
+
+                   <span class="nx">assert</span><span class="p">.</span><span class="nx">fileContent</span> <span class="s">&#39;app/scripts/prefabs/testprefab.js&#39;</span><span class="p">,</span> <span class="sr">/Testprefab\.prototype.constructor = Testprefab;\n/</span>
+
+                   <span class="nx">done</span><span class="p">();</span></code></pre></div>
+
+
+
+
+<p>In this test suite, we have two tests, one uses the default options, second runs the generator with <code>--group</code> option. In each case we use <code>assert.fileContent</code> test helper to match a regex against the generated file.</p>
+
+
+
+
+<p>To pass the test let&rsquo;s code our sub generator.</p>
+
+
+
+
+<p><code>File: generators/prefab/index.js</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">PhaserJsStateGenerator</span> <span class="o">=</span> <span class="nx">yeoman</span><span class="p">.</span><span class="nx">generators</span><span class="p">.</span><span class="nx">NamedBase</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="nx">init</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">desc</span><span class="o">:</span> <span class="s1">&#39;extend Phaser.Group&#39;</span><span class="p">,</span>
+      <span class="nx">type</span><span class="o">:</span> <span class="nb">Boolean</span><span class="p">,</span>
+      <span class="nx">defaults</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">});</span>
+  <span class="p">},</span>
+
+  <span class="nx">generate</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">slugName</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">slugify</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">name</span><span class="p">),</span>
+        <span class="nx">templateFile</span> <span class="o">=</span> <span class="s1">&#39;prefab.js&#39;</span><span class="p">;</span>
+        
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">])</span> <span class="p">{</span>
+      <span class="nx">templateFile</span> <span class="o">=</span> <span class="s1">&#39;prefab_group.js&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="nx">templateFile</span><span class="p">,</span> <span class="s1">&#39;app/scripts/prefabs/&#39;</span> <span class="o">+</span> <span class="nx">slugName</span> <span class="o">+</span> <span class="s1">&#39;.js&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Here we define an extra option <code>group</code> that can be passed to our sub generator. It defaults to false, you can enable it by calling the sub generator with group option <code>$ yo name:prefab --group</code>. In our case we use the option to decide which template we copy as boilerplate.</p>
+
+
+
+
+<h2>Manually Test Your Generator</h2>
+
+
+
+
+<p>Now your generator is passing all the tests, yet you want to see it in action. Since you&rsquo;re developing the generator locally, and haven&rsquo;t published it yet, you have to symlink your local module as a global module, using npm.</p>
+
+
+
+
+<p>Run this command in your generators root directory.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm link</code></pre></div>
+
+
+
+
+<p>Now you can call <code>yo generator-name</code> and test your generator if it works.</p>
+
+
+
+
+<h2>Publish Your Generator</h2>
+
+
+
+
+<p>Finally you can publish your generator. First create an account on <a href="http://npmjs.org">npm</a>. Next set your npm author info.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm <span class="nb">set </span>init.author.name <span class="s2">&quot;Your Name&quot;</span>
+<span class="nv">$ </span>npm <span class="nb">set </span>init.author.email <span class="s2">&quot;Your Email&quot;</span>
+<span class="nv">$ </span>npm <span class="nb">set </span>init.author.url <span class="s2">&quot;Your Website&quot;</span>
+
+<span class="nv">$ </span>npm adduser</code></pre></div>
+
+
+
+
+<p>Then publish with.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm publish</code></pre></div>
+
+
+
+
+<h3>A note about the package.json format</h3>
+
+
+
+
+<p>There is a list of yeoman generators in the <a href="http://yeoman.io/generators/">official yeoman website</a>. It is automatically pulled from the npm API. To list your generator there you need to add <code>yeoman-generator</code> keyword to your <code>package.json</code>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;generator-phaserjs&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;version&quot;</span><span class="o">:</span> <span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;Yeoman generator for Phaser with RequireJS&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;repository&quot;</span><span class="o">:</span> <span class="s2">&quot;eguneys/generator-phaserjs&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;author&quot;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;Emre Guneyler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;email&quot;</span><span class="o">:</span> <span class="s2">&quot;eguneys@hotmail.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="o">:</span> <span class="s2">&quot;https://github.com/eguneys&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;keywords&quot;</span><span class="o">:</span> <span class="p">[</span>
+    <span class="s2">&quot;yeoman-generator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;scaffold&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;generator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;framework&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mvc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phaser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gulp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;requirejs&quot;</span>
+  <span class="p">],</span>
+  <span class="c1">//.. rest is omitted</span>
+<span class="p">}</span></code></pre></div>
+
+
+
+
+<p>Before you publish remember these notes; set your package name properly, set a version number and bump it with every publish, set a description, set a github repository url, set your author details, set your keywords properly, and add a <code>yeoman-generator</code> keyword. Note that the repository field should fit either of these formats or it won&rsquo;t get listed in the yeoman website, <code>"repository": "eguneys/generator-phaserjs"</code>, <code>"repository": "git://github.com/eguneys/generator-phaserjs"</code>.</p>
+
+
+
+
+<h2>Conclusion</h2>
+
+
+
+
+<p>In this article we have built a yeoman generator for Phaser using test driven development with mocha. We have learned how to write tests using BDD syntax, and use yeoman test helpers to ease testing, how to write yeoman generators using the yeoman generator API. Finally we have learned how to manually test our generator and publish it as a global npm module. You can find the full source code at <a href="https://github.com/eguneys/generator-phaserjs">github</a>. Note that you should always search similar generators and see their source code before you write your own and I recommend using our approach and building your project template first, as we did in the first article, then writing your generator will be greatly simplified.</p>
+
+
+
+
+<p>There are more that we haven&rsquo;t covered you can do with yeoman API, such as user interaction, composability, storing user configuration and much more. For more information see the official yeoman website and these useful links.</p>
+
+
+
+
+<ul>
+<li><a href="http://yeoman.io/generators/">generator list</a>.</li>
+<li><a href="http://yeoman.github.io/generator/">API documentation</a>.</li>
+<li><a href="http://code.tutsplus.com/tutorials/build-your-own-yeoman-generator--cms-20040">tuts+ tutorial</a>.</li>
+</ul>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Let's Build a Yeoman Generator: Project Template /w Gulp]]></title>
+    <link href="http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp/"/>
+    <updated>2014-09-17T12:14:32+03:00</updated>
+    <id>http://www.eguneys.com/blog/2014/09/17/lets-build-a-yeoman-generator-project-template-slash-w-gulp</id>
+    <content type="html"><![CDATA[<h2>Introduction</h2>
+
+
+
+
+<p><a href="http://yeoman.io">Yeoman</a> is a project scaffolding tool, it defines your work-flow, and scaffolds the boilerplate. <a href="http://gulpjs.com">Gulp</a> is a build system, alternative to grunt, it is stream based, and prefers code over configuration.</p>
+
+
+
+
+<p>In this two series articles we will learn how to build a yeoman generator from scratch, using test driven development. for Phaser game projects, which I before introduced in my previous article. We will use gulp as our build tool and requirejs for module loader.</p>
+
+
+
+
+<p>First step towards a yeoman generator, is building a project template. yeoman is only responsible for scaffolding. The rest is building the project with gulp and having a project template. In this article we will build our project template using gulp and requirejs, in the next article we will introduce yeoman, and start test driven development.</p>
+
+
+
+
+<h2>Initialize Phaser Game Project</h2>
+
+
+
+
+<p>The Phaser is a game framework that runs on browser, as we develop our game, we will run the game on the browser and live reload the changes. We will use npm for our development dependencies, and bower for the front end dependencies.</p>
+
+
+
+
+<p>First we initialize npm.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm init</code></pre></div>
+
+
+
+
+<p>This will ask various questions and create a <code>package.json</code> file for us.</p>
+
+
+
+
+<p>Next we initialize bower the same way, and create a <code>bower.json</code> file.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">bower init</code></pre></div>
+
+
+
+
+<h2>Decide a directory structure</h2>
+
+
+
+
+<p>The next step is to decide a directory structure for the project.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">.
+<span class="p">|</span>-- app
+<span class="p">|</span>   <span class="p">|</span>-- data
+<span class="p">|</span>   <span class="p">|</span>-- index.html
+<span class="p">|</span>   <span class="sb">`</span>-- scripts
+<span class="p">|</span>       <span class="p">|</span>-- app.js
+<span class="p">|</span>       <span class="p">|</span>-- common.js
+<span class="p">|</span>       <span class="p">|</span>-- config.js
+<span class="p">|</span>       <span class="p">|</span>-- lib_main.js
+<span class="p">|</span>       <span class="p">|</span>-- main.js
+<span class="p">|</span>       <span class="p">|</span>-- prefabs
+<span class="p">|</span>       <span class="sb">`</span>-- states
+<span class="p">|</span>           <span class="p">|</span>-- boot.js
+<span class="p">|</span>           <span class="sb">`</span>-- preload.js
+<span class="p">|</span>-- bower.json
+<span class="p">|</span>-- build
+<span class="p">|</span>   <span class="p">|</span>-- wrap.end
+<span class="p">|</span>   <span class="sb">`</span>-- wrap.start
+<span class="p">|</span>-- gulpfile.js
+<span class="sb">`</span>-- package.json</code></pre></div>
+
+
+
+
+<p><code>app</code> folder is where our application code resides. <code>build</code> folder is for files used by requirejs optimizer. We have our <code>package.json</code>, <code>bower.json</code> and <code>gulpfile.js</code>. The project will compile into <code>public</code> directory as we will see later.</p>
+
+
+
+
+<h3>Configure bower and jshint</h3>
+
+
+
+
+<p>npm will install it&rsquo;s dependencies in the <code>node_modules</code> folder, and bower will install it&rsquo;s dependencies in the <code>bower_components</code> folder, but, yet we can configure the default directory for bower using a <code>.bowerrc</code></p>
+
+
+
+
+<p>Create a <code>.bowerrc</code> file and add these in.</p>
+
+
+
+
+<p><code>File: .bowerrc</code></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="o">{</span>
+  <span class="s2">&quot;directory&quot;</span>: <span class="s2">&quot;app/bower_components&quot;</span>
+<span class="o">}</span></code></pre></div>
+
+
+
+
+<p>Next, create a <code>.jshintrc</code> file. and setup your configuration.</p>
+
+
+
+
+<p>Finally install the bower dependencies and save them in the <code>bower.json</code>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>bower install requirejs almond phaser --save</code></pre></div>
+
+
+
+
+<p>Note we use <code>--save</code> flag to make our changes saved in <code>bower.json</code>. We have three dependencies, requirejs the module loader, almond that we discussed in the previous article about requirejs, and Phaser the game framework.</p>
+
+
+
+
+<h2>gulp.js, The streaming build system</h2>
+
+
+
+
+<p>We have three types of tasks that gulp can help us for our project. Building the project, linting, and injecting code to our project, that is injecting our bower dependencies to our requirejs configuration file, and serving the project and watching for changes.</p>
+
+
+
+
+<p>We will use gulp plugins and other npm modules to help us, the first plugin we use is <code>gulp-load-plugins</code>, that automatically loads any gulp plugins we have in our <code>package.json</code>, that is convenient.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">$</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-load-plugins&#39;</span><span class="p">)();</span>
+<span class="kd">var</span> <span class="nx">rimraf</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;rimraf&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">runSequence</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;run-sequence&#39;</span><span class="p">);</span></code></pre></div>
+
+
+
+
+<p>Note that we assign <code>gulp-load-plugins</code> to <code>$</code>, that is all the plugins are attached to. We also require two other npm modules, <code>rimraf</code> for removing files/folders, and <code>runSequence</code> for running gulp tasks in sync. Because gulp runs tasks asynchronously by default.</p>
+
+
+
+
+<h3>gulp; build the project!</h3>
+
+
+
+
+<p>First task is simple, <code>clean</code>, that will remove the build folder.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">rimraf</span><span class="p">(</span><span class="nx">paths</span><span class="p">.</span><span class="nx">dist</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>This is how you define a gulp task. notice we pass <code>cb</code> as a parameter, that makes the gulp task asynchronous. It will be called once the task is done and tell gulp to continue with the other tasks. By default gulp will run all the tasks and wait for nothing.</p>
+
+
+
+
+<p>Next task is building the extra files in the <code>app</code> directory. In our case it&rsquo;s <code>index.html</code>, you might have extra <code>favicon.ico</code> or <code>robots.txt</code>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;build-extras&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="s1">&#39;app/*.*&#39;</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s1">&#39;public&#39;</span><span class="p">));</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p><code>gulp.src</code> takes a glob and represents a file structure, which then can be piped to plugins. <code>gulp.dest</code> can be piped to and it will write files. In our case we take all the files in app folder, <code>app/*.*</code>, and write them into <code>public</code> folder.</p>
+
+
+
+
+<p>Next task is building the scripts. In our case this is moving the scripts into the <code>public</code> directory. We might have used minification, optimization and concatenation, we don&rsquo;t need it. We have an extra task that uses requirejs optimizer to optimize the script files and build a stand-alone code you can check out the <a href="https://github.com/eguneys/phaser-gulp-requirejs">source code</a> for this article.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;build-commonjs&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">mergeStream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;merge-stream&#39;</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">bowers</span> <span class="o">=</span> <span class="nx">gulp</span>
+      <span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="s1">&#39;app/bower_components/**/*.js&#39;</span><span class="p">])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="s1">&#39;public/scripts/lib&#39;</span><span class="p">))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s1">&#39;public/scripts/lib&#39;</span><span class="p">));</span>
+
+  <span class="kd">var</span> <span class="nx">common</span> <span class="o">=</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="s1">&#39;app/scripts/**/*.js&#39;</span><span class="p">])</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">changed</span><span class="p">(</span><span class="s1">&#39;public/scripts/app&#39;</span><span class="p">))</span>
+      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="s1">&#39;public/scripts/app&#39;</span><span class="p">));</span>
+
+  <span class="k">return</span> <span class="nx">mergeStream</span><span class="p">([</span><span class="nx">bowers</span><span class="p">,</span> <span class="nx">common</span><span class="p">]);</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that, we use <code>merge-stream</code> that combines two gulp streams together, and we return the stream. Remember we passed an extra parameter, <code>cb</code> to gulp that made the task asynchronous, this is a second way of doing that, returning the stream also makes the task run asynchronous. The third way of making a task asynchronous is to return a promise. For more information about gulp API see <a href="https://github.com/gulpjs/gulp/blob/master/docs/API.md">docs</a>.</p>
+
+
+
+
+<p>Finally we have our <code>build</code> task, that will run the <code>clean</code>, <code>jshint-fail</code>, and <code>build-requirejs</code> tasks synchronously in that order.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;build&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">runSequence</span><span class="p">(</span><span class="s1">&#39;clean&#39;</span><span class="p">,</span> <span class="s1">&#39;jshint-fail&#39;</span><span class="p">,</span> <span class="s1">&#39;build-commonjs&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;build&#39;</span><span class="p">]);</span></code></pre></div>
+
+
+
+
+<p>Note that, we also have a special <code>default</code> task, that will run with only <code>gulp</code> command, opposed to <code>gulp build</code>.</p>
+
+
+
+
+<p>By default, tasks are run concurrently, as opposed to grunt which runs the tasks in series. To run a list of tasks in sync either tasks have to be asynchronous and have to depend on each other or you need to run tasks via <code>runSequence</code>.</p>
+
+
+
+
+<h3>gulp; lint, and inject some code!</h3>
+
+
+
+
+<p>Next task, is linting our code with <code>jshint</code>, there is a gulp plugin we access it using <code>$.jshint</code>, remember <code>gulp-load-plugins</code>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;jshint-fail&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">([</span><span class="s1">&#39;gulpfile.js&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app/**/*.js&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;!app/bower_components/**&#39;</span><span class="p">])</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="s1">&#39;jshint-stylish&#39;</span><span class="p">))</span>
+        <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="s1">&#39;fail&#39;</span><span class="p">));</span>
+  <span class="p">});</span></code></pre></div>
+
+
+
+
+<p>Note that we pipe the jshint plugin and the jshint reporters to the gulp stream. Visit <a href="https://github.com/yeoman/bower-requirejs">here</a> for more information on jshint plugin.</p>
+
+
+
+
+<p>There is an npm module <a href="https://github.com/yeoman/bower-requirejs">bower-requirejs</a>, that wires up installed bower components into requirejs config, we also use it in our gulp task, though I won&rsquo;t show it here.</p>
+
+
+
+
+<h3>gulp; serve and watch files!</h3>
+
+
+
+
+<p>Next task, is serving our project to the browser, we use <a href="https://github.com/schickling/gulp-webserver">gulp-webserver</a> plugin for that. It will start a connect server and serve our files as well as watch them and run a live reload server and inject a live reload script so the browser will auto refresh when a file is changed.</p>
+
+
+
+
+<p>Final task is <code>watch</code> task, that will watch our source files for changes and run various tasks on change.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-js" data-lang="js"><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;watch&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;serve&#39;</span><span class="p">],</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;app/scripts/**/*.js&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;build-commonjs&#39;</span><span class="p">]);</span>
+
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;app/*.*&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;build-extras&#39;</span><span class="p">]);</span>
+    
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;bower.json&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;bower-rjs&#39;</span><span class="p">]);</span>
+
+  <span class="nx">gulp</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="s1">&#39;gulpfile.js&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">util</span><span class="p">.</span><span class="nx">colors</span><span class="p">.</span><span class="nx">red</span><span class="p">(</span><span class="s1">&#39;\n----------&#39;</span> <span class="o">+</span>
+                                  <span class="s1">&#39;\nRestart the Gulp process&#39;</span> <span class="o">+</span>
+                                  <span class="s1">&#39;\n----------&#39;</span><span class="p">));</span>
+  <span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+
+
+
+<p>You might wonder, <code>gulp-webserver</code> is also watching the folders, why we need gulp to watch again. Well gulp watches the source files, and runs tasks that compiles the source into the <code>public</code> folder, meanwhile <code>gulp-webserver</code> watches the <code>public</code> folder for changes, and refreshes the browser on change.</p>
+
+
+
+
+<p>Also note that &lsquo;watch&rsquo; task depends on &lsquo;serve&rsquo; task, we tell that by passing a dependency array as the second argument to <code>gulp.task</code>.</p>
+
+
+
+
+<p>Here are the list of dependencies we&rsquo;ve used in this article and the command to install and save them in the <code>package.json</code>.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm install --save-dev gulp gulp-load-plugins gulp-changed gulp-imagemin gulp-livereload gulp-webserver gulp-util gulp-jshint jshint-stylish rimraf merge-stream run-sequence bower-requirejs requirejs</code></pre></div>
+
+
+
+
+<p>There are many gulp plug-ins listed in the <a href="http;//gulpjs.com/plugins">official website</a>. Yet gulp is sensitive about plugins, that there should be one, if it is only necessary, and they have a <a href="https://github.com/gulpjs/plugins/blob/master/src/blackList.json">blacklist of plugins</a> that should not be used, so pick your plugins carefully, and use bare npm modules wherever possible. Also checkout the <a href="https://github.com/gulpjs/gulp/blob/master/docs/README.md">documentation</a> and <a href="https://github.com/gulpjs/gulp/tree/master/docs/recipes">recipes</a> for achieving various tasks.</p>
+
+
+
+
+<h2>Conclusion</h2>
+
+
+
+
+<p>In this article we have built a project template for Phaser using gulp as our build tool, and requirejs as our module loader. We have learned how to define gulp tasks and how to make use of gulp plug-ins to enable us a nice development environment, with watching files and live-reloading our changes. Note that yet we used Phaser as a sample project, this will give you the main idea, and hopefully you will apply the same principles to your specific projects. You can find the full source code at <a href="https://github.com/eguneys/phaser-gulp-requirejs">github</a>.</p>
+
+
+
+
+<p>In the next article we will use this project template to build a yeoman generator, we will also show test driven development using mocha and yeoman test helpers.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting Started Fullstack: Building API With Baucis]]></title>
+    <link href="http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis/"/>
+    <updated>2014-01-06T11:52:06+02:00</updated>
+    <id>http://www.eguneys.com/blog/2014/01/06/getting-started-fullstack-building-api-with-baucis</id>
+    <content type="html"><![CDATA[<p>In previous post, we&rsquo;ve seen how to navigate in our site using
+backbone.js. In this post, we will go back to server side, and build
+our blog api using <a href="https://github.com/wprl/baucis">baucis</a>. At the
+end of this tutorial, you will be able to query your mongodb database
+and pull blog information.</p>
+
+
+
+
+<h1>Building Schemas with Mongoose</h1>
+
+
+
+
+<p>Firstly, let&rsquo;s define our blog schema. We will use
+<a href="http://mongoosejs.com">mongoose</a> to interact with mongodb. Go to
+app/scripts directory and create a new file named schemas.js.</p>
+
+
+
+
+<p><em>app/scripts/schemas.js</em></p>
+
+
+
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">baucis</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;baucis&#39;</span><span class="p">);</span>
+
+<span class="c1">// Define journal schema</span>
+<span class="kd">var</span> <span class="nx">journalSchema</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span>
+    <span class="nx">paper</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="nb">String</span><span class="p">},</span>
+    <span class="nx">author</span><span class="o">:</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">photo</span><span class="o">:</span> <span class="nb">String</span> <span class="p">},</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">body</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">date</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">Date</span><span class="p">,</span> <span class="k">default</span><span class="o">:</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">},</span>
+    <span class="nx">meta</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">votes</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">favs</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">tags</span><span class="o">:</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> <span class="nx">lowercase</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">trim</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// db connection string</span>
+<span class="kd">var</span> <span class="nx">MONGO_URI</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">MONGOHQ_URI</span> <span class="o">||</span> <span class="s1">&#39;mongodb://localhost/test&#39;</span><span class="p">;</span>
+
+
+<span class="c1">// connect to mongodb with mongoose</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="nx">MONGO_URI</span><span class="p">);</span>
+
+<span class="c1">// define a journal model with journalSchema</span>
+<span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">,</span> <span class="nx">journalSchema</span><span class="p">);</span>
+
+<span class="c1">// use baucis to create a rest api</span>
+<span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="nx">baucis</span><span class="p">.</span><span class="nx">rest</span><span class="p">(</span><span class="s1">&#39;journal&#39;</span><span class="p">);</span></code></pre></div>
+
+
+
+
+<p>We created a blog schema, connected to our database, defined a model
+based on our schema, and finally used baucis to create the rest api.
+Now if you run your server, your api will be available at:</p>
+
+
+
+
+<p>*<a href="http://localhost/api*">http://localhost/api*</a> endpoint.</p>
+
+
+
+
+<p>Here is a table, describing available functions:</p>
+
+
+
+
+<table>
+<thead>
+<tr>
+<th> HTTP Verb     </th>
+<th> /journals   </th>
+<th> /journals/:id </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> GET           </td>
+<td> Get all or a subset of documents </td>
+<td> Get the addressed document </td>
+</tr>
+<tr>
+<td> POST          </td>
+<td> Creates new documents and sends them back.  You may post a single document or an array of documents.      </td>
+<td> n/a </td>
+</tr>
+<tr>
+<td> PUT           </td>
+<td> n/a </td>
+<td> Update the addressed document </td>
+</tr>
+<tr>
+<td> DELETE        </td>
+<td> Delete all or a subset of documents </td>
+<td> Delete the addressed object </td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+<p>To test it go to *<a href="http://localhost/api/journals*">http://localhost/api/journals*</a> in your browser, it
+should return an empty array. Because we don&rsquo;t have any blogs in our
+database yet.</p>
+
+
+
+
+<h1>Using Mongo Shell</h1>
+
+
+
+
+<p>Though we can post blogs to our database using the api, we will simply
+create blogs using the mongo shell. Mongo shell is CLI for using
+mongodb. run <em>mongo</em> in your console to open the shell. Issue the
+following commands to create your first blog entry.</p>
+
+
+
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># This is for commenting</span>
+   <span class="c"># just ignore it.</span>
+
+   <span class="c"># List databases</span>
+   show dbs
+   
+   <span class="c"># Choose database, test</span>
+   use <span class="nb">test</span>
+
+   <span class="c"># List collections in the database</span>
+   show collections
+
+   <span class="c"># journals collection is created when we created a model with mongoose.</span>
+   <span class="c"># collection is the plural form of our model.</span>
+
+   <span class="c">#list the contents in journals collection</span>
+   <span class="c"># it should be empty</span>
+   db.journals.find<span class="o">()</span>
+
+   <span class="c"># place a new blog entry in journals collection</span>
+   <span class="c"># here we define only title and body attributes, you can define other attributes as well</span>
+
+   db.journals.create<span class="o">({</span>title: <span class="s1">&#39;My Simple Blog 1&#39;</span>, body: <span class="s1">&#39;Simple body for testing&#39;</span> <span class="o">})</span>
+
+   <span class="c"># list the contents again to see the newly created blog</span>
+   db.journals.find<span class="o">()</span></code></pre></div>
+
+
+
+
+<p>Mongo shell is interpreting javascript code here, so use
+javascript. Undefined attributes will have their defaults value We can
+disable null values for attributes, but for simplicity we don&rsquo;t.</p>
+
+
+
+
+<p>Now go to <a href="http://localhost/api/journals">http://localhost/api/journals</a> again and see the newly created blog entry.</p>
+
+
+
+
+<blockquote><p>In the next post, we will consume this api with backbone.js and list
+the blogs in our main page.</p></blockquote>
+
+]]></content>
+  </entry>
+  
+</feed>

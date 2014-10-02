@@ -10,6 +10,10 @@ simple_search: https://www.google.com/search
 description: Blog about javascript, nodejs, emberjs, backbone, requirejs, yeoman, phaser, web development, game development, and anything that interests me about software.
 background: pingtech-bg.jpg
 
+# Language i18n
+
+languages: ["en", "tr"]
+
 # HPSTR Properties
 
 keywords: javascript nodejs emberjs backbone phaser requirejs yeoman web-development game-development

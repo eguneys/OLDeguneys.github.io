@@ -11,6 +11,14 @@ image:
 ---
 
 {% assign index = true %}
+
+{% assign post = site.posts.first %}
+<article class="hentry">
+  {% include article.html %}
+</article><!-- /.hentry -->
+
+{% comment %}
+
 {% for post in paginator.posts %}
 <article class="hentry">
   {% include article.html %}
@@ -30,3 +38,5 @@ image:
     <a href="{{ root_url }}{{ paginator.next_page }}" class="btn">Next</a>
   {% endif %}
 </div><!-- /.pagination -->
+
+{% endcomment %}

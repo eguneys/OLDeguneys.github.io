@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+gem 'jekyll-multiple-languages-plugin'
+
 gem 'animation'
 
 group :development do
