@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AAAA,KAAM,CACJ,OAAO,CAAE,KAAK",
-"sources": ["../../../app/elements/player-el/player-el.scss"],
-"names": [],
-"file": "player-el.css"
-}

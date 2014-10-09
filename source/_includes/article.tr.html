@@ -21,13 +21,7 @@ the index page or a normal post page.
     </span>
     {% if site.disqus_short_name and post.comments %}
       &nbsp; &bull; &nbsp;<span class="entry-comments">
-        <a href="{{ root_url }}{{ post.url }}#disqus_thread">
-          {% if page.language == 'en' %}
-          Comment
-          {% else %}
-          Yorumlar
-          {% endif %}
-        </a>
+        <a href="{{ root_url }}{{ post.url }}#disqus_thread">Yorumlar</a>
       </span>
     {% endif %}
   </div><!-- /.entry-meta -->

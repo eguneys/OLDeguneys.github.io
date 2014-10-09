@@ -1,3 +1,0 @@
-<br />
-<b>Warning</b>:  readfile(http://picjumbo.picjumbocom.netdna-cdn.com/wp-content/uploads/): failed to open stream: HTTP request failed! HTTP/1.1 403 Forbidden
- in <b>/data/www/picjumbo_com/www/wp-content/themes/picjumbofree/run.php</b> on line <b>14</b><br />

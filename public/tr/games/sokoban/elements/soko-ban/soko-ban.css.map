@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AAAA,KAAM,CACJ,OAAO,CAAE,YAAY,CACrB,MAAM,CAAE,KAAK,CACb,KAAK,CAAE,KAAK",
-"sources": ["../../../app/elements/soko-ban/soko-ban.scss"],
-"names": [],
-"file": "soko-ban.css"
-}

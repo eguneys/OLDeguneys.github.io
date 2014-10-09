@@ -12,7 +12,11 @@ background: pingtech-bg.jpg
 
 # Language i18n
 
+gems: ['jekyll-multiple-languages']
+
 languages: ["en", "tr"]
+
+language_default: 'en'
 
 # HPSTR Properties
 
