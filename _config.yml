@@ -113,3 +113,11 @@ google_analytics_tracking_id: UA-42906606-6
 
 # Facebook Like
 facebook_like: false
+
+# Multiple languages
+gems:           ['jekyll-multiple-languages']
+
+languages:          ['en', 'tr']
+
+# If not config, the first of languages will be the default
+language_default:   'en'
