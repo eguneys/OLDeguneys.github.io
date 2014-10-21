@@ -9,3 +9,47 @@
               }
       }
 }
+
+.lang-switch {
+    width: 100%;
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    z-index: 1000;
+    @include perspective(1000px);
+    @include perspective-origin(50% 200%);
+
+    @media #{$medium} {
+	position: fixed;
+	max-width: 175px;
+        top: 25px;
+        right: 25px;
+    }
+
+    @media screen {
+	position: fixed;
+	max-width: 120px;
+        top: 25px;
+        right: 25px;
+    }
+
+    a {
+        padding: 10px;
+	top: 0;
+	left: 0;
+	background: $comp-color;
+	border: none;
+	width: 48px;
+	height: 45px;
+	text-indent: -900em;
+	overflow: hidden;
+	position: relative;
+	cursor: pointer;
+	outline: none;
+	@include border-bottom-right-radius(3px);
+	opacity: 0.6;
+	@media #{$medium} {
+	    @include border-radius(3px);
+	}
+    }
+}

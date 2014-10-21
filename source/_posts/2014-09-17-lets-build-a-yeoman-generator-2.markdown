@@ -6,9 +6,9 @@ comments: true
 categories: nodejs yeoman phaser mocha tdd
 tags: [nodejs, yeoman, phaser, mocha, tdd]
 comments: true
+share: true
 image:
   feature: /images/diary-bg20.jpg
-  background: colorflags-bg.jpg
 ---
 
 ## Introduction

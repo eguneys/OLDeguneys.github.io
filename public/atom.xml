@@ -4,7 +4,7 @@
   <title><![CDATA[Fullstack Development w/ Javascript]]></title>
   <link href="http://www.eguneys.com/atom.xml" rel="self"/>
   <link href="http://www.eguneys.com/"/>
-  <updated>2014-10-09T09:36:28+03:00</updated>
+  <updated>2014-10-22T02:24:04+03:00</updated>
   <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
@@ -1910,6 +1910,8 @@ We pass the el property for the views here as mentioned previously. and <em>Navi
       
       
     <span class="nt">&lt;/script&gt;</span></code></pre></div>
+
+
 
 ]]></content>
   </entry>

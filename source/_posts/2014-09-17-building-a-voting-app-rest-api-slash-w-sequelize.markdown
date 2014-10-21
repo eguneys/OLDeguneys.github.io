@@ -6,9 +6,9 @@ comments: true
 categories: nodejs REST Sequelize backend
 tags: [nodejs, REST, Sequelize, backend]
 comments: true
+share: true
 image:
   feature: /images/diary-bg20.jpg
-  background: colorflags-bg.jpg
 ---
 
 ## Introduction

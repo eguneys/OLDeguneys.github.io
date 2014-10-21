@@ -6,9 +6,9 @@ comments: true
 categories: nodejs ember frontend
 tags: [nodejs, ember generator-emberfs ember-cli frontend]
 comments: true
+share: true
 image:
   feature: /images/diary-bg20.jpg
-  background: colorflags-bg.jpg
 ---
 
 ## Introduction

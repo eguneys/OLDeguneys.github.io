@@ -1,10 +1,12 @@
 ---
-layout: post
+layout: tr/post
 title: "Hayat Hikayem"
 date: 2014-10-09 08:53:53 +0300
 comments: true
+image:
+  feature: /images/diary-bg20.jpg
 share: true
-categories: 
+categories: [hayat, hikaye]
 ---
 
 ## Hayat Hikayem

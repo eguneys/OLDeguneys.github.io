@@ -2,12 +2,11 @@
 layout: post
 title: "Getting Started Fullstack: Building API with Baucis"
 date:   2014-01-06 09:52:06
-comments: true
 categories: nodejs mongodb mongoose baucis
 tags: [nodejs, mongodb, mongoose, baucis]
 image:
   feature: /images/diary-bg20.jpg
-  background: colorflags-bg.jpg
+share: true
 ---
 
 In previous post, we've seen how to navigate in our site using

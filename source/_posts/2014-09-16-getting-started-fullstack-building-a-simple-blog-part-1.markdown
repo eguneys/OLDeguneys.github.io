@@ -4,10 +4,10 @@ title: "Getting Started Fullstack: Setting Up The Server"
 date: 2013-12-31 00:52:07
 categories: nodejs npm bower mongodb
 tags: [nodejs, npm bower mongodb]
-comments: true
 image:
   feature: /images/diary-bg20.jpg
   background: colorflags-bg.jpg
+share: true
 ---
 
 Getting Started Full Stack - Building a simple blog - Part 1

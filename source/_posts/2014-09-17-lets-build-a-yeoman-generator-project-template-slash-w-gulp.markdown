@@ -6,9 +6,9 @@ comments: true
 categories: nodejs gulp yeoman phaser
 tags: [nodejs, gulp, yeoman, phaser]
 comments: true
+share: true
 image:
   feature: /images/diary-bg20.jpg
-  background: colorflags-bg.jpg
 ---
 
 ## Introduction
