@@ -69,88 +69,82 @@
   
   <url>
     <loc>http://www.eguneys.com/404.html</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/categories/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/tr/categories/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/blog/archives/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/archives/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/games/pacman-unicode/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/about/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/tr/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/posts/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
     <loc>http://www.eguneys.com/tr/posts/</loc>
-    <lastmod>2014-10-31T23:05:40+02:00</lastmod>
+    <lastmod>2015-02-20T15:34:14+02:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   
   
-  
-  <url>
-    <loc>http://www.eguneys.com/games/sokoban/index.html</loc>
-    <lastmod>2014-10-22T02:36:23Z</lastmod>
-    <priority>0.6</priority>
-  </url>
   
   <url>
     <loc>http://www.eguneys.com/games/sokoban/bower_components/core-component-page/core-component-page.html</loc>
@@ -171,6 +165,12 @@
   </url>
   
   <url>
+    <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer-test-tools/tools.html</loc>
+    <lastmod>2014-10-22T02:36:23Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer/layout.html</loc>
     <lastmod>2014-10-22T02:36:23Z</lastmod>
     <priority>0.6</priority>
@@ -183,25 +183,13 @@
   </url>
   
   <url>
-    <loc>http://www.eguneys.com/games/sokoban/bower_components/polymer-test-tools/tools.html</loc>
+    <loc>http://www.eguneys.com/games/sokoban/index.html</loc>
     <lastmod>2014-10-22T02:36:23Z</lastmod>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.eguneys.com/games/sokoban/404.html</loc>
-    <lastmod>2014-10-22T02:36:23Z</lastmod>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.eguneys.com/games/sokoban/elements/player-el/player-el.html</loc>
-    <lastmod>2014-10-22T02:36:23Z</lastmod>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.eguneys.com/games/sokoban/elements/elements.vulcanized.html</loc>
+    <loc>http://www.eguneys.com/games/sokoban/elements/box-el/box-el.html</loc>
     <lastmod>2014-10-22T02:36:23Z</lastmod>
     <priority>0.6</priority>
   </url>
@@ -213,19 +201,31 @@
   </url>
   
   <url>
-    <loc>http://www.eguneys.com/games/sokoban/elements/soko-ban/soko-ban.html</loc>
-    <lastmod>2014-10-22T02:36:23Z</lastmod>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.eguneys.com/games/sokoban/elements/elements.html</loc>
     <lastmod>2014-10-22T02:36:23Z</lastmod>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.eguneys.com/games/sokoban/elements/box-el/box-el.html</loc>
+    <loc>http://www.eguneys.com/games/sokoban/elements/elements.vulcanized.html</loc>
+    <lastmod>2014-10-22T02:36:23Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/player-el/player-el.html</loc>
+    <lastmod>2014-10-22T02:36:23Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/elements/soko-ban/soko-ban.html</loc>
+    <lastmod>2014-10-22T02:36:23Z</lastmod>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.eguneys.com/games/sokoban/404.html</loc>
     <lastmod>2014-10-22T02:36:23Z</lastmod>
     <priority>0.6</priority>
   </url>
