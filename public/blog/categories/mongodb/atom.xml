@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Mongodb | Fullstack Development w/ Javascript]]></title>
   <link href="http://www.eguneys.com/blog/categories/mongodb/atom.xml" rel="self"/>
   <link href="http://www.eguneys.com/"/>
-  <updated>2015-03-09T10:27:13+02:00</updated>
+  <updated>2016-06-02T18:00:25+03:00</updated>
   <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
@@ -363,16 +363,16 @@ bower install underscore&lt;/p&gt;
 <p>Final step is to actually setup the server, so we can host our files. Go to app/scripts directory and create the two files below.</p>
 
 <p><div><script src='https://gist.github.com/938cd7857d3480f63d7a.js'></script>
-<noscript><pre><code>var path = require(&#39;path&#39;);
+<noscript><pre><code>var path = require('path');
 // File IO module
-var fs = require(&#39;fs&#39;);
+var fs = require('fs');
 // This is how you export things to other modules. 
 // See routes.index usage in web.js routes.index is 
 // replaced by this function.
 // This function is a middleware for handling http requests
 exports.index = function(req, res) {
     // read index.html and send as response
-    fs.readFile(path.join(__dirname, &#39;../public/index.html&#39;), &#39;utf8&#39;, function(err, text) {
+    fs.readFile(path.join(__dirname, '../public/index.html'), 'utf8', function(err, text) {
         res.send(text);
     });
 }</code></pre></noscript></div>
@@ -405,7 +405,7 @@ exports.index = function(req, res) {
 	  &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
 	  &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
 	&lt;/button&gt;
-	&lt;a class=&quot;navbar-brand&quot; href=&#39;#&#39;&gt; Simple Blog &lt;/a&gt;
+	&lt;a class=&quot;navbar-brand&quot; href='#'&gt; Simple Blog &lt;/a&gt;
       &lt;/div&gt;
 
       &lt;div class=&quot;collapse navbar-collapse&quot; id=&quot;navbar-collapse&quot;&gt;

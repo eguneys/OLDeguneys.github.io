@@ -4,7 +4,7 @@
   <title><![CDATA[Fullstack Development w/ Javascript]]></title>
   <link href="http://www.eguneys.com/atom.xml" rel="self"/>
   <link href="http://www.eguneys.com/"/>
-  <updated>2015-03-09T10:27:13+02:00</updated>
+  <updated>2016-06-02T18:00:25+03:00</updated>
   <id>http://www.eguneys.com/</id>
   <author>
     <name><![CDATA[Emre Guneyler]]></name>
@@ -12,6 +12,470 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Gulp Workflow for Building Web Projects]]></title>
+    <link href="http://www.eguneys.com/blog/2016/06/02/gulp-workflow-for-building-web-projects/"/>
+    <updated>2016-06-02T17:51:35+03:00</updated>
+    <id>http://www.eguneys.com/blog/2016/06/02/gulp-workflow-for-building-web-projects</id>
+    <content type="html"><![CDATA[<p>Gulp Workflow For Building Web Projects</p>
+
+<p>In this quick tip, we will build a simple and fast gulp workflow for building web projects.</p>
+
+<p>If you are building a small web project, or testing an idea, and you just want to quickly get up and running, you will find gulp useful to help you handle your workflow tasks.</p>
+
+<p>You can also check out the example <a href="https://github.com/eguneys/gulpp">github repo</a>.</p>
+
+<h2>Gulp Tasks</h2>
+
+<p>This is a list of essential gulp tasks we will setup:</p>
+
+<p>Development
+* Linting
+* Bundle ES6/JavaScript with source maps
+* Watch JavaScript and bundle on changes</p>
+
+<p>Production
+* Bundle and minify ES6/JavaScript
+* Minify CSS
+* Copy files</p>
+
+<p>For development, we need to bundle ES6 code for the browser, and include source maps, so we can easily debug it in the browser. We also watch source files for changes and re-bundle so we can quickly see the result of our changes. Optionally, we lint our code, so it helps detect errors in our code, we add it because it&rsquo;s simple.</p>
+
+<p>For production, again we bundle ES6 code for the browser, this time, we minify it. We also minify our CSS. Finally, we copy other assets to our build folder.</p>
+
+<p>This is the simplest setup we need to get things working. Use <code>http-server</code> to serve our project for development, and reload browser manually when the code changes, so we don&rsquo;t have to complicate our setup to handle these jobs.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>npm install http-server -g
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Setting Up The Project</h2>
+
+<p>Setup the file structure, and initialize our Node.js project, it will add a <code>package.json</code> to our project.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mkdir examples assets src
+</span><span class='line'>npm init
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Development</h3>
+
+<p>Install <a href="https://www.sitepoint.com/beginners-guide-node-package-manager/">npm</a> dependencies for development:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>npm install --save-dev gulp gulp-util gulp-streamify gulp-jshint jshint gulp-uglify vinyl-source-stream watchify babelify babel-preset-es2015 babel-plugin-add-module-exports gulp-csso
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We have <code>gulp</code> and some gulp plugins to handle gulp tasks. <code>babelify</code> is <a href="https://github.com/substack/node-browserify#browserifytransform">browserify transform</a> to transform ES6 code with <a href="https://babeljs.io/">babel</a> and bundle it for the browser. <code>babel</code> needs some plugins to work properly, so we include them as well. <code>watchify</code> is <a href="https://github.com/substack/node-browserify#plugins">browserify plugin</a> for watching source files, and re-bundle on code changes. and <code>vinyl-source-stream</code> is for gluing <code>browserify</code> with <code>gulp</code>.</p>
+
+<p>Now add an <code>examples/index.html</code> file to test our project:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;head&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;title&gt;</span>Gulp workflow for setting up a web project<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href=</span><span class="s">&quot;../build/main.css&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;../build/gulpp.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/head&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nt">&lt;body&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;gulpp&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;script&gt;</span>
+</span><span class='line'>      <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">ground</span> <span class="o">=</span> <span class="nx">Gulpp</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;gulpp&#39;</span><span class="p">));</span>
+</span><span class='line'>      <span class="p">})();</span>
+</span><span class='line'>    <span class="nt">&lt;/script&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In the head section, we reference a CSS file and a JavaScript file from the <code>build</code> folder. This folder and the files will be created by our build workflow. In the body section, we have a single div element <code>#gulpp</code>. Finally inside the <code>script</code> block we have a <a href="https://www.sitepoint.com/community/t/understanding-anonymous-functions/41542/10">self invoking function</a>. Our code is exposed with the <code>Gulpp</code> global name, we will see later how this is done. We can use it inside this function to test our code, we call it as a function and pass the <code>#gulpp</code> DOM element, so that our app will hopefully render into it.</p>
+
+<p>Run <code>http-server</code> to serve our project folder, and visit <code>http://localhost:8080/examples/index.html</code>.</p>
+
+<p>There are three errors, we need to build CSS and JavaScript and put them in the <code>build</code> folder:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>Cannot GET http://localhost:8080/build/main.css
+</span><span class='line'>Cannot GET http://localhost:8080/build/gulpp.js
+</span><span class='line'>Uncaught ReferenceError: Gulpp is not defined
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Add a <code>gulpfile.js</code> file in the root of our project to define gulp tasks:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="nx">source</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;vinyl-source-stream&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">gutil</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-util&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">jshint</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-jshint&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">watchify</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;watchify&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">browserify</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;browserify&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">uglify</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-uglify&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">streamify</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-streamify&#39;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">sources</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./src/main.js&#39;</span><span class="p">];</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">destination</span> <span class="o">=</span> <span class="s1">&#39;./build&#39;</span><span class="p">;</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">onError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">gutil</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">gutil</span><span class="p">.</span><span class="nx">colors</span><span class="p">.</span><span class="nx">red</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">));</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">standalone</span> <span class="o">=</span> <span class="s1">&#39;Gulpp&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;dev&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">watchify</span><span class="p">.</span><span class="nx">args</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">opts</span><span class="p">.</span><span class="nx">debug</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">opts</span><span class="p">.</span><span class="nx">standalone</span> <span class="o">=</span> <span class="nx">standalone</span><span class="p">;</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">bundleStream</span> <span class="o">=</span> <span class="nx">watchify</span><span class="p">(</span><span class="nx">browserify</span><span class="p">(</span><span class="nx">sources</span><span class="p">,</span> <span class="nx">opts</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">transform</span><span class="p">(</span><span class="s1">&#39;babelify&#39;</span><span class="p">,</span>
+</span><span class='line'>                 <span class="p">{</span> <span class="nx">presets</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;es2015&quot;</span><span class="p">],</span>
+</span><span class='line'>                   <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;add-module-exports&#39;</span><span class="p">]</span> <span class="p">})</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">,</span> <span class="nx">rebundle</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="nx">gutil</span><span class="p">.</span><span class="nx">log</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">function</span> <span class="nx">rebundle</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nx">bundleStream</span><span class="p">.</span><span class="nx">bundle</span><span class="p">()</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="nx">onError</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">source</span><span class="p">(</span><span class="s1">&#39;gulpp.js&#39;</span><span class="p">))</span>
+</span><span class='line'>      <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">destination</span><span class="p">));</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">rebundle</span><span class="p">();</span>
+</span><span class='line'><span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dev&#39;</span><span class="p">]);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>First, we require our dependencies, next we define where our source files are and our destination folder, where our bundled project is put.</p>
+
+<p>Then we define our <code>dev</code> task. <code>browserify</code> will take our source files, and bundle them into a single file. <code>debug</code> option is for generating source maps and <code>standalone</code> option will export the code as a window global. <code>babelify</code> will transform ES6 before bundling. <code>watchify</code> will emit <code>update</code> event when the files change, and <code>log</code> event when the bundle is created.</p>
+
+<p>We define a <code>rebundle</code> function to do the actual bundling and call it on <code>update</code> event so it will re-bundle on source changes. After calling <code>bundle</code> on the browserify instance, it will produce a single JavaScript file. Next, we add <code>vinyl-source-stream</code> passing a filename <code>gulpp.js</code> in to the mix to <a href="http://stackoverflow.com/a/30851219/3995789">make it more gulp friendly</a>, and finally write it inside <code>./build</code> folder. See <a href="https://www.sitepoint.com/getting-started-browserify/">this article</a> for a more detailed explanation of how this works. Also notice that we added handlers for the <code>log</code> and <code>error</code> events, so the bundle errors and logs can be logged.</p>
+
+<p>We define <code>dev</code> task as the <code>default</code> task for gulp. So run <code>gulp</code> to test if our gulp task is working:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>11:41:37<span class="o">]</span> Cannot find module <span class="s1">&#39;/projects/gulpp/src/main.js&#39;</span> from <span class="s1">&#39;/projects/gulpp&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It&rsquo;s working, but we need to add a JavaScript source file to bundle.</p>
+
+<p>Add a <code>src/main.js</code> file to define our application starting point:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kr">import</span> <span class="nx">view</span> <span class="nx">from</span> <span class="s1">&#39;./view&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kr">const</span> <span class="nx">ctrl</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">face</span><span class="o">:</span> <span class="s1">&#39;cats&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;[gulpp]&#39;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">function</span> <span class="nx">render</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">tag</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">tag</span><span class="p">;</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">body</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">children</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">element</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="err">`</span><span class="o">&lt;</span><span class="nx">$</span><span class="p">{</span><span class="nx">tag</span><span class="p">}</span><span class="o">&gt;</span><span class="nx">$</span><span class="p">{</span><span class="nx">body</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/${tag}&gt;`;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">function</span> <span class="nx">init</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">config</span> <span class="o">=</span> <span class="p">{})</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">msg</span> <span class="o">||</span> <span class="s2">&quot;[gulpp]&quot;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">msg</span> <span class="o">=</span> <span class="nx">msg</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">render</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">render</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">view</span><span class="p">(</span><span class="nx">ctrl</span><span class="p">));</span>
+</span><span class='line'>  <span class="p">};</span>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">renderRAF</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nb">window</span><span class="p">.</span><span class="nx">requestAnimationFrame</span><span class="p">(</span><span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">render</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">};</span>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">render</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">init</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>src/main.js</code> imports <code>./view</code> module, So add a <code>src/view.js</code> file to define it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">ctrl</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">return</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">tag</span><span class="o">:</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">children</span><span class="o">:</span> <span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">data</span><span class="p">.</span><span class="nx">msg</span><span class="p">}</span> <span class="nx">is</span> <span class="nx">alive</span><span class="o">!</span> <span class="o">&lt;</span><span class="nx">br</span><span class="o">/&gt;</span> <span class="o">&lt;</span><span class="nx">span</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;cat&quot;</span><span class="o">&gt;</span><span class="nx">$</span><span class="p">{</span><span class="nx">data</span><span class="p">.</span><span class="nx">face</span><span class="p">}</span><span class="o">&lt;</span><span class="err">/span&gt; `</span>
+</span><span class='line'>  <span class="p">};</span>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To simply describe our code, we set up an MVC style project. <code>./view</code> module takes the <code>ctrl.data</code> and returns a data structure so we can render it. <code>./main</code> module sets up the <code>ctrl.data</code> and gives it to <code>render</code> function, so it renders it to DOM. Remember the <code>Gulpp</code> global variable inside our HTML file, we called is as a function and passed a DOM element. It is what we export from inside <code>src/main.js</code>, in this case the <code>init</code> function.</p>
+
+<p>If we want to add an external dependency, first we install it:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>npm install --save cat-ascii-faces
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then import and use it (inside <code>src/main.js</code>):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kr">import</span> <span class="nx">cats</span> <span class="nx">from</span> <span class="s1">&#39;cat-ascii-faces&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">face</span> <span class="o">=</span> <span class="nx">cats</span><span class="p">();</span>
+</span><span class='line'>  <span class="nx">ctrl</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">renderRAF</span><span class="p">();</span>
+</span><span class='line'><span class="p">},</span> <span class="mi">1000</span> <span class="o">+</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">4000</span><span class="p">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will update our <code>ctrl.data</code> and re-render our app.</p>
+
+<p>Run gulp <code>dev</code> task if it&rsquo;s not already running, and refresh the browser to see the code working. We can see the ES6 source files and set breakpoints on browser:</p>
+
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/05/1464275958gulp-workflow-sourcemap.png" title="[gulp workflow source-map breakpoint]" ></p>
+
+<p>If we want to serve assets like stylesheets or images, we can copy these files into build folder using a gulp task:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;assets&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">assetFiles</span> <span class="o">=</span> <span class="s1">&#39;./assets/**/*&#39;</span><span class="p">;</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">);</span>
+</span><span class='line'>  <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="nx">assetFiles</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">destination</span><span class="p">)));</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can hook this task to <code>dev</code> task so it will run every time we run <code>dev</code> task. Change our <code>dev</code> task:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>-gulp.task<span class="o">(</span><span class="s1">&#39;dev&#39;</span>, <span class="k">function</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>+gulp.task<span class="o">(</span><span class="s1">&#39;dev&#39;</span>, <span class="o">[</span><span class="s1">&#39;assets&#39;</span><span class="o">]</span>, <span class="k">function</span><span class="o">()</span> <span class="o">{</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, add a gulp task to lint our JavaScript:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;lint&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="nx">sources</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">jshint</span><span class="p">({</span> <span class="nx">esversion</span><span class="o">:</span> <span class="mi">6</span> <span class="p">}))</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">jshint</span><span class="p">.</span><span class="nx">reporter</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">));</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note the <code>esversion: 6</code> option we pass to <code>jshint</code> so it works with ES6. All setup for development. Write some code and reload the browser to see the changes.</p>
+
+<h3>Production</h3>
+
+<p>We need to minify code for production use.</p>
+
+<p>First, add a task to minify CSS:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;css&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">cssFiles</span> <span class="o">=</span> <span class="s1">&#39;assets/*.css&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">gulp</span><span class="p">.</span><span class="nx">src</span><span class="p">(</span><span class="nx">cssFiles</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">csso</span><span class="p">())</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">destination</span><span class="p">));</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Add some CSS files in <code>assets</code> folder, then run <code>gulp css</code> to run this task, and see the minified output in <code>build/main.css</code>.</p>
+
+<p>Next, add a task to minify JavaScript:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;prod&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;css&#39;</span><span class="p">],</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">browserify</span><span class="p">(</span><span class="nx">sources</span><span class="p">,</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">standalone</span><span class="o">:</span> <span class="nx">standalone</span>
+</span><span class='line'>  <span class="p">}).</span><span class="nx">transform</span><span class="p">(</span><span class="s1">&#39;babelify&#39;</span><span class="p">,</span>
+</span><span class='line'>               <span class="p">{</span> <span class="nx">presets</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;es2015&quot;</span><span class="p">],</span>
+</span><span class='line'>                 <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;add-module-exports&#39;</span><span class="p">]</span> <span class="p">})</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">bundle</span><span class="p">()</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="nx">onError</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">source</span><span class="p">(</span><span class="s1">&#39;gulpp.min.js&#39;</span><span class="p">))</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">streamify</span><span class="p">(</span><span class="nx">uglify</span><span class="p">()))</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">gulp</span><span class="p">.</span><span class="nx">dest</span><span class="p">(</span><span class="nx">destination</span><span class="p">));</span>
+</span><span class='line'><span class="p">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This task is similar to our <code>dev</code> task, except we don&rsquo;t have the <code>debug</code> option, and we have an extra step for minifying code, using <code>gulp-uglify</code> and we have to wrap that with <code>gulp-streamify</code>, see <a href="http://stackoverflow.com/a/26127463/3995789">why here</a>. Finally since the output is minified, we change our output filename to <code>gulpp.min.js</code>.</p>
+
+<p>We are done with our gulp tasks. Add a <a href="https://docs.npmjs.com/misc/scripts">script</a> to <code>package.json</code> to clean build folder and compile your project into it.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'>  <span class="s2">&quot;scripts&quot;</span><span class="err">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;compile&quot;</span><span class="p">:</span> <span class="s2">&quot;rm -rf build &amp;&amp; gulp prod&quot;</span>
+</span><span class='line'>  <span class="p">}</span><span class="err">,</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now run <code>npm run compile</code> and check out our bundled project inside <code>build</code> folder.</p>
+
+<h2>Publish</h2>
+
+<p>Next step is to include this project inside another project, which we will call our main project. Although we can publish this to npm, we can also specify this project as a local dependency and use it locally.</p>
+
+<p>Add <a href="https://docs.npmjs.com/files/package.json#main">main entry point</a> to <code>package.json</code>. This is the output JavaScript file from your <code>gulp prod</code> task:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'>  <span class="s2">&quot;main&quot;</span><span class="err">:</span> <span class="s2">&quot;build/gulpp.min.js&quot;</span><span class="err">,</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Run <code>npm link</code> in this project to specify it as a local module.</p>
+
+<p>Next, go to our main project and install this project, when first time installing make sure you specify the local path to this project:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="err">npm</span> <span class="err">install</span> <span class="err">../gulpp</span> <span class="err">--save</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>`</p>
+
+<p>Now you can import and use <a href="https://github.com/eguneys/gulpp">gulpp</a>. Next time we update something on this project, we have to run <code>npm run compile</code> to re-build our project, and go to our main project and run <code>npm install gulpp</code> to re-install the updated version. Enjoy!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Hayat Hikayem]]></title>
@@ -2109,16 +2573,16 @@ bower install underscore</code></pre></div>
 <p>Final step is to actually setup the server, so we can host our files. Go to app/scripts directory and create the two files below.</p>
 
 <div><script src='https://gist.github.com/938cd7857d3480f63d7a.js'></script>
-<noscript><pre><code>var path = require(&#39;path&#39;);
+<noscript><pre><code>var path = require('path');
 // File IO module
-var fs = require(&#39;fs&#39;);
+var fs = require('fs');
 // This is how you export things to other modules. 
 // See routes.index usage in web.js routes.index is 
 // replaced by this function.
 // This function is a middleware for handling http requests
 exports.index = function(req, res) {
     // read index.html and send as response
-    fs.readFile(path.join(__dirname, &#39;../public/index.html&#39;), &#39;utf8&#39;, function(err, text) {
+    fs.readFile(path.join(__dirname, '../public/index.html'), 'utf8', function(err, text) {
         res.send(text);
     });
 }</code></pre></noscript></div>
@@ -2151,7 +2615,7 @@ exports.index = function(req, res) {
       &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
       &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
     &lt;/button&gt;
-    &lt;a class=&quot;navbar-brand&quot; href=&#39;#&#39;&gt; Simple Blog &lt;/a&gt;
+    &lt;a class=&quot;navbar-brand&quot; href='#'&gt; Simple Blog &lt;/a&gt;
       &lt;/div&gt;
 
       &lt;div class=&quot;collapse navbar-collapse&quot; id=&quot;navbar-collapse&quot;&gt;
